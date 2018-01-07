@@ -1,5 +1,5 @@
 {
-  "Weight": 30.0,
-  "Height": 130,
-  "Birthday": "2010-01-01"
+  "weight": 30.0,
+  "height": 130,
+  "birthday":"2010-01-01"
 }

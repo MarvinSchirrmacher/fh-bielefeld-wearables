@@ -6,6 +6,7 @@ import com.sun.javaws.exceptions.InvalidArgumentException;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 
 /**
  * Grafische Benutzerschnittstelle zur Bedienung und Konfiguration der intelligenten Schultasche.

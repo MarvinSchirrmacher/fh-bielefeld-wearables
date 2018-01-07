@@ -8,9 +8,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.StringReader;
 
 public class SchoolBagManagement extends JFrame implements ActionListener {
-    SchoolBagSettings settings;
+    private SchoolBagSettings settings;
 
     SchoolBagManagement(String title, String settingsFilePath) throws FileNotFoundException {
         super(title);
@@ -23,6 +24,7 @@ public class SchoolBagManagement extends JFrame implements ActionListener {
     private void loadSettings(String filePath) throws FileNotFoundException {
         Gson gson = new Gson();
         JsonReader reader = new JsonReader(new FileReader(filePath));
+        reader.setLenient(true);
         this.settings = gson.fromJson(reader, SchoolBagSettings.class);
     }
 
