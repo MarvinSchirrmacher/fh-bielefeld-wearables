@@ -6,12 +6,13 @@ import com.google.gson.stream.JsonReader;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 
 public class SchoolBagManagement extends JFrame implements ActionListener {
     SchoolBagSettings settings;
 
-    SchoolBagManagement(String title, String settingsFilePath) {
+    SchoolBagManagement(String title, String settingsFilePath) throws FileNotFoundException {
         super(title);
 
         loadSettings(settingsFilePath);
@@ -19,7 +20,7 @@ public class SchoolBagManagement extends JFrame implements ActionListener {
         initializePane();
     }
 
-    private void loadSettings(String filePath) {
+    private void loadSettings(String filePath) throws FileNotFoundException {
         Gson gson = new Gson();
         JsonReader reader = new JsonReader(new FileReader(filePath));
         this.settings = gson.fromJson(reader, SchoolBagSettings.class);

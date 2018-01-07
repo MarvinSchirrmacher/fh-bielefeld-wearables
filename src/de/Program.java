@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import com.sun.javaws.exceptions.InvalidArgumentException;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 
 /**
  * Grafische Benutzerschnittstelle zur Bedienung und Konfiguration der intelligenten Schultasche.
@@ -26,6 +27,12 @@ public class Program {
         if (!configurationFile.isFile())
             throw new Exception(String.format("The file \"%s\" is no valid file", configurationFilePath));
 
-        SwingUtilities.invokeLater(() -> new SchoolBagManagement("Intelligente Schultasche", configurationFilePath));
+        SwingUtilities.invokeLater(() -> {
+            try {
+                new SchoolBagManagement("Intelligente Schultasche", configurationFilePath);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+        });
     }
 }
