@@ -75,6 +75,7 @@ class SettingsFileHandler(FileSystemEventHandler):
         self.load_settings = load_settings
 
     def on_modified(self, event):
+        print('Detected modified event at %s' % event.src_path)
         if event.src_path != self.settings_file_path:
             return
         self.load_settings()
