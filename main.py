@@ -1,5 +1,5 @@
 import json
-from os.path import dirname
+from os.path import dirname, abspath
 
 from kivy.app import App
 from kivy.clock import Clock
@@ -14,7 +14,7 @@ class SchoolBagApp(App):
     all subroutines.
     """
     def build(self):
-        self.root_directory = dirname(__file__)
+        self.root_directory = dirname(abspath(__file__))
         self.settings_file_path = self.root_directory + '/settings.json'
 
         self.setup_pressure_distribution()
