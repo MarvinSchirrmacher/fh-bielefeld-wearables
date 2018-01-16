@@ -1,5 +1,6 @@
 {
-  "weight": 30.0,
-  "height": 130,
-  "birthday":"2010-01-01"
+	"gender": "male",
+  	"weight": 30.0,
+  	"height": 130,
+	"birthday": "2010-01-01"
 }
