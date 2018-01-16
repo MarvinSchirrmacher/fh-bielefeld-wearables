@@ -7,6 +7,9 @@ from trimmer import Trimmer
 
 
 class Management(TabbedPanel):
+    """
+    Base management class for all business logic.
+    """
     settings = ObjectProperty(Settings())
     trimmer = ObjectProperty(Trimmer())
 
@@ -16,9 +19,10 @@ class Management(TabbedPanel):
 
 class SchoolBagApp(App):
     """
-    Program entry point which starts the graphical user interface and with it
-    all subroutines.
+    Program entry point which starts the graphical user interface and the
+    management class.
     """
+
     def build(self):
         return Management()
 

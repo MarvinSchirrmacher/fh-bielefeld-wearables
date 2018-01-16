@@ -1,7 +1,14 @@
-<Management>:
+<Label>:
+    font_size: sp(25)
+    halign: 'center'
+
+<TabbedPanel>:
     do_default_tab: False
     tab_pos: 'right_top'
+    tab_height: pt(40)
+    tab_width: self.height / 3
 
+<Management>:
     canvas.before:
         Color:
             rgba: .949, .953, .954, 0
@@ -22,7 +29,7 @@
         text: 'Trim'
 
         Label:
-            text: 'Trimming mode is active, watch for the LEDs on the shoulder straps.'
+            text: 'Trimming mode is active.\nWatch for the LEDs on the shoulder straps.'
 
     TabbedPanelItem:
         text: 'Configure'
