@@ -1,20 +1,20 @@
 import json
 from os.path import dirname, abspath
 
-from kivy.properties import NumericProperty, ObjectProperty, StringProperty
+from kivy.properties import NumericProperty, ObjectProperty, StringProperty, OptionProperty
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
 
 class Settings:
     def __init__(self):
-        self.gender = StringProperty('Unknown')
-        self.birthday = StringProperty('Unknown')
-        self.height = NumericProperty(0)
-        self.weight = NumericProperty(0)
-
         self.__root_directory = dirname(abspath(__file__))
         self.__settings_file_path = self.__root_directory + '/settings.json'
+
+        self.gender = OptionProperty('None', options=['male', 'female', 'undefined'])
+        self.birthday = StringProperty('undefined')
+        self.height = NumericProperty(0)
+        self.weight = NumericProperty(0)
 
         self.__load()
         self.__setup_watchdog()
@@ -26,10 +26,10 @@ class Settings:
         """
         with open(self.__settings_file_path) as settings_file:
             settings = json.load(settings_file)
-            self.gender = str(settings['gender'])
-            self.birthday = str(settings['birthday'])
-            self.height = float(settings['height'])
-            self.weight = float(settings['weight'])
+            self.gender = settings['gender']
+            self.birthday = settings['birthday']
+            self.height = settings['height']
+            self.weight = settings['weight']
 
     def __setup_watchdog(self):
         """

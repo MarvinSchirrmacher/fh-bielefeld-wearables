@@ -7,13 +7,11 @@ from trimmer import Trimmer
 
 
 class Management(TabbedPanel):
-    settings = ObjectProperty(None, allownone=True)
-    trimmer = ObjectProperty(None, allownone=True)
+    settings = ObjectProperty(Settings())
+    trimmer = ObjectProperty(Trimmer())
 
     def __init__(self):
         super().__init__()
-        self.settings = ObjectProperty(Settings(), allownone=True)
-        self.trimmer = ObjectProperty(Trimmer(), allownone=True)
 
 
 class SchoolBagApp(App):
