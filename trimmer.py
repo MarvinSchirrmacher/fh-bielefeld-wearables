@@ -1,23 +1,34 @@
 from kivy.clock import Clock
 
+from settings import Settings
+
 
 class Trimmer:
-    def __init__(self):
+    def __init__(self, settings: Settings):
         """
-        Sets up and schedules a routine which cyclically analyses the pressure
-        distribution of the carried school bag.
+        Saves a reference to the settings.
         :return:
         """
+        self.__settings = settings
         self.__analyzer = None
 
-    def start(self):
-        self.__analyzer = Clock.schedule_interval(self.analyse, 1 / 2.)
+    def start(self, analysis_interval: float = 1 / 2.):
+        """
+        Start the cyclically analysis of the pressure distribution.
+        :param analysis_interval: The analysis frequency in seconds.
+        :return:
+        """
+        self.__analyzer = Clock.schedule_interval(self.__analyse, analysis_interval)
 
     def stop(self):
+        """
+        Stops the cyclically analysis of the pressure distribution.
+        :return:
+        """
         Clock.unschedule(self.__analyzer)
 
     @staticmethod
-    def analyse(dt):
+    def __analyse(dt):
         """
         Reads several sensor data to calculate the current pressure
         distribution if the school bag is currently carried.

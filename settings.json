@@ -2,5 +2,18 @@
 	"gender": "female",
   	"weight": 30.0,
   	"height": 130,
-	"birthday": "2010-01-01"
+	"birthday": "2010-01-01",
+	"week_configuration": {
+		"monday": [],
+		"tuesday": [],
+		"wednesday": [],
+		"thursday": [],
+		"friday": []
+	},
+	"current_configuration": [
+		"00112233",
+		"44556677",
+		"8899AABB",
+		"CCDDEEFF"
+	]
 }
