@@ -3,14 +3,14 @@
   	"weight": 30.0,
   	"height": 130,
 	"birthday": "2010-01-01",
-	"week_configuration": {
+	"week_content": {
 		"monday": [],
 		"tuesday": [],
 		"wednesday": [],
 		"thursday": [],
 		"friday": []
 	},
-	"current_configuration": [
+	"current_content": [
 		"00112233",
 		"44556677",
 		"8899AABB",

@@ -30,8 +30,8 @@ class Settings:
             self.birthday = settings['birthday']
             self.height = settings['height']
             self.weight = settings['weight']
-            self.week_configuration = settings['week_configuration']
-            self.current_configuration = settings['current_configuration']
+            self.week_content = settings['week_content']
+            self.current_content = settings['current_content']
 
     def __setup_watchdog(self):
         """

@@ -96,7 +96,7 @@ class ContentManagement:
         :param uid: The uid to look for.
         :return:
         """
-        if self.__settings.current_configuration.contains(uid):
-            self.__settings.current_configuration.remove(uid)
+        if self.__settings.current_content.contains(uid):
+            self.__settings.current_content.remove(uid)
         else:
-            self.__settings.current_configuration.append(uid)
+            self.__settings.current_content.append(uid)
