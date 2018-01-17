@@ -26,12 +26,12 @@
                 text: 'Start reading'
                 size_hint_y: None
                 height: pt(40)
-                callback: root.content_management.start()
+                on_press: root.content_management.start()
             Button:
                 text: 'Stop reading'
                 size_hint_y: None
                 height: pt(40)
-                callback: root.content_management.stop()
+                on_press: root.content_management.stop()
             ListView:
                 item_strings: root.settings.current_configuration
             ListView:
