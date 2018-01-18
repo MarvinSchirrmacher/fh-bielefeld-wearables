@@ -1,15 +1,17 @@
 from kivy.clock import Clock
 
+from led_stripe_controller import LedStripeController
 from settings import Settings
 
 
 class Trimmer:
-    def __init__(self, settings: Settings):
+    def __init__(self, settings: Settings, led_stripe_controller: LedStripeController):
         """
         Saves a reference to the settings.
         :return:
         """
         self.__settings = settings
+        self.__led_stripe_controller = led_stripe_controller
         self.__analyzer = None
 
     def start(self, analysis_interval: float = 1 / 2.):

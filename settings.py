@@ -1,23 +1,34 @@
 import json
 from os.path import dirname, abspath
 
-from kivy.properties import NumericProperty, ObjectProperty, StringProperty, OptionProperty
+from kivy.event import EventDispatcher
+from kivy.properties import NumericProperty, StringProperty, OptionProperty
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
 
-class Settings:
-    def __init__(self):
-        self.__root_directory = dirname(abspath(__file__))
-        self.__settings_file_path = self.__root_directory + '/settings.json'
+class Settings(EventDispatcher):
+    gender = OptionProperty(
+        'Männlich', options=['Männlich', 'Weiblich'])
+    birthday = StringProperty()
+    height = NumericProperty(0)
+    weight = NumericProperty(0)
+    lighting_mode = OptionProperty(
+        'Ausgeschaltet', options=['Manuell', 'Automatik', 'Ausgeschaltet'])
 
-        self.gender = OptionProperty('None', options=['male', 'female', 'undefined'])
-        self.birthday = StringProperty('undefined')
-        self.height = NumericProperty(0)
-        self.weight = NumericProperty(0)
+    def __init__(self, *args, **kwargs):
+        """
+        Determines the location of the settings file, initially loads all
+        settings values and sets up the changes observer.
+        :param args:
+        :param kwargs:
+        """
+        super().__init__(*args, **kwargs)
+        self.__root_directory = dirname(abspath(__file__)) + '/../bleno-master/examples/schoolbag/'
+        self.__settings_file_path = self.__root_directory + 'data.json' # '/settings.json'
 
         self.__load()
-        self.__setup_watchdog()
+        self.__setup_changes_observer()
 
     def __load(self):
         """
@@ -30,13 +41,22 @@ class Settings:
             self.birthday = settings['birthday']
             self.height = settings['height']
             self.weight = settings['weight']
-            self.week_content = settings['week_content']
-            self.current_content = settings['current_content']
+            self.lighting_mode = settings['lightingMode']
+            #self.week_content = settings['week_content'] # Jonthan did not implemented this until now in his settings file
+            #self.current_content = settings['current_content'] # Jonthan did not implemented this until now in his settings file
+            self.tags = settings['tags']
 
-    def __setup_watchdog(self):
+    def save(self):
         """
-        Sets up a file watchdog which recognizes any changes in the settings
-        file and triggers an settings update.
+        Save the current settings to the given json file.
+        :return:
+        """
+        raise NotImplementedError()
+
+    def __setup_changes_observer(self):
+        """
+        Sets up a file observer which recognizes any changes in the settings
+        file and triggers an update of all settings.
         :return:
         """
         self.settings_handler = SettingsFileHandler(
