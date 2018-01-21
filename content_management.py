@@ -1,14 +1,15 @@
-from kivy.clock import Clock
+import sys
 
-import importlib
+from kivy.adapters.listadapter import ListAdapter
+from kivy.clock import Clock
+from kivy.properties import StringProperty, ListProperty, partial
 
 from settings import Settings
 
-module_rpi = importlib.util.find_spec("RPi")
-module_spi = importlib.util.find_spec("spi")
-dependencies_are_installed = module_rpi is not None and module_spi is not None
-if dependencies_are_installed:
+if sys.platform.startswith('linux'):
     from mfrc522.mfrc522 import MFRC522
+else:
+    from mock.mfrc522_mock import MFRC522
 
 
 class ContentManagement:
@@ -19,6 +20,7 @@ class ContentManagement:
     compares the current configuration with the configured configuration
     for the current day.
     """
+
     def __init__(self, settings: Settings):
         """
         Saves a reference to the settings and sets up the rfid reader.
@@ -29,11 +31,8 @@ class ContentManagement:
         self.__authentication_key = [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]
         self.__authentication_key_length = 8
 
-        if not dependencies_are_installed:
-            self.__read_callback = lambda x: print("Can not read")
-        else:
-            self.__rfid_reader = MFRC522()
-            self.__read_callback = self.__read
+        self.__rfid_reader = MFRC522()
+        self.__read_callback = self.__read
 
     def start(self, read_interval: float = 1 / 2.):
         """
@@ -42,7 +41,7 @@ class ContentManagement:
         :return:
         """
         self.__reader = Clock.schedule_interval(
-            self.__read_callback, read_interval)
+            partial(self.__read_callback, self), read_interval)
 
     def stop(self):
         """
@@ -51,18 +50,18 @@ class ContentManagement:
         """
         Clock.unschedule(self.__reader)
 
-    def __read(self):
+    def __read(self, *largs):
         """
         Reads any tag and updates the current configuration if a tag was
         detected.
         :return:
         """
-        status, tag_type = self.__reader.MFRC522_Request(self.__reader.PICC_REQIDL)
-        if status != self.__reader.MI_OK:
+        status, tag_type = self.__rfid_reader.MFRC522_Request(self.__rfid_reader.PICC_REQIDL)
+        if status != self.__rfid_reader.MI_OK:
             return
 
-        status, uid = self.__reader.MFRC522_Anticoll()
-        if not status == self.__reader.MI_OK:
+        status, uid = self.__rfid_reader.MFRC522_Anticoll()
+        if not status == self.__rfid_reader.MI_OK:
             return
 
         if not self.__authenticate(uid):
@@ -76,15 +75,15 @@ class ContentManagement:
         :param uid: The rfid tag uid.
         :return: True if authenticated, else False.
         """
-        self.__reader.MFRC522_SelectTag(uid)
-        status = self.__reader.MFRC522_Auth(
-            self.__reader.PICC_AUTHENT1A,
+        self.__rfid_reader.MFRC522_SelectTag(uid)
+        status = self.__rfid_reader.MFRC522_Auth(
+            self.__rfid_reader.PICC_AUTHENT1A,
             self.__authentication_key_length,
             self.__authentication_key, uid)
 
-        if status == self.__reader.MI_OK:
-            self.__reader.MFRC522_Read(self.__authentication_key_length)
-            self.__reader.MFRC522_StopCrypto1()
+        if status == self.__rfid_reader.MI_OK:
+            self.__rfid_reader.MFRC522_Read(self.__authentication_key_length)
+            self.__rfid_reader.MFRC522_StopCrypto1()
             return True
         else:
             return False
@@ -96,7 +95,18 @@ class ContentManagement:
         :param uid: The uid to look for.
         :return:
         """
-        if self.__settings.current_content.contains(uid):
+        print('[Content management] Update current configuration')
+        if uid in self.__settings.current_content:
             self.__settings.current_content.remove(uid)
         else:
             self.__settings.current_content.append(uid)
+
+
+class ContentListItem(ListProperty):
+    name = StringProperty()
+    tag = StringProperty()
+
+    def __init__(self, name='unnamed', tag='0000 0000 0000'):
+        super().__init__()
+        self.name = StringProperty(name)
+        self.tag = StringProperty(tag)

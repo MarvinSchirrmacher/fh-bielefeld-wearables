@@ -1,7 +1,12 @@
 from functools import partial
 
+import sys
 from kivy.clock import Clock
-from neopixel import *
+
+if sys.platform.startswith('linux'):
+    from neopixel import ws, Adafruit_NeoPixel, Color
+else:
+    from mock.neopixel_mock import ws, Adafruit_NeoPixel, Color
 
 RGB_MAX = 255
 LED_COUNT = 30  # Number of LED pixels.
@@ -65,7 +70,7 @@ class LedStripeController:
     def set_mode_manual(self):
         """
         Schedules the configured lighting animation and enables the manual
-        switching betwenn on and off.
+        switching between on and off.
         :return:
         """
         self.__animation = Clock.schedule_interval(

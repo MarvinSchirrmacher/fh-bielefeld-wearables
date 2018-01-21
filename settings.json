@@ -1,20 +1,31 @@
 {
-	"gender": "female",
+	"gender": "male",
   	"weight": 30.0,
   	"height": 130,
 	"birthday": "2010-01-01",
 	"lighting_mode": "off",
-	"week_content": {
-		"monday": [],
-		"tuesday": [],
-		"wednesday": [],
-		"thursday": [],
-		"friday": []
-	},
 	"current_content": [
 		"00112233",
 		"44556677",
 		"8899AABB",
 		"CCDDEEFF"
-	]
+	],
+	"tags": {
+		"00112233": {
+			"name": "Mathebuch",
+			"image": ""
+		},
+		"44556677": {
+			"name": "Deutschheft",
+			"image": ""
+		},
+		"8899AABB": {
+			"name": "Englischbuch",
+			"image": ""
+		},
+		"CCDDEEFF": {
+			"name": "Federmappe",
+			"image": ""
+		}
+	}
 }

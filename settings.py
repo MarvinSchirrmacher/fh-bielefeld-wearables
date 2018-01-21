@@ -1,6 +1,7 @@
 import json
 from os.path import dirname, abspath
 
+import sys
 from kivy.event import EventDispatcher
 from kivy.properties import NumericProperty, StringProperty, OptionProperty
 from watchdog.events import FileSystemEventHandler
@@ -8,13 +9,15 @@ from watchdog.observers import Observer
 
 
 class Settings(EventDispatcher):
-    gender = OptionProperty(
-        'Männlich', options=['Männlich', 'Weiblich'])
+    gender = OptionProperty('Männlich', options=['Männlich', 'Weiblich']) \
+        if sys.platform.startswith('linux') else \
+        OptionProperty('male', options=['male', 'female'])
     birthday = StringProperty()
     height = NumericProperty(0)
     weight = NumericProperty(0)
-    lighting_mode = OptionProperty(
-        'Ausgeschaltet', options=['Manuell', 'Automatik', 'Ausgeschaltet'])
+    lighting_mode = OptionProperty('Ausgeschaltet', options=['Manuell', 'Automatik', 'Ausgeschaltet']) \
+        if sys.platform.startswith('linux') else \
+        OptionProperty('off', options=['off', 'manual', 'automatic'])
 
     def __init__(self, *args, **kwargs):
         """
@@ -24,8 +27,12 @@ class Settings(EventDispatcher):
         :param kwargs:
         """
         super().__init__(*args, **kwargs)
-        self.__root_directory = dirname(abspath(__file__)) + '/../bleno-master/examples/schoolbag/'
-        self.__settings_file_path = self.__root_directory + 'data.json' # '/settings.json'
+        if sys.platform.startswith('linux'):
+            self.__root_directory = '/home/pi/Downloads/bleno-master/examples/schoolbag/'
+            self.__settings_file_path = self.__root_directory + 'data.json'
+        else:
+            self.__root_directory = dirname(abspath(__file__)) + '/'
+            self.__settings_file_path = self.__root_directory + 'settings.json'
 
         self.__load()
         self.__setup_changes_observer()
@@ -41,9 +48,8 @@ class Settings(EventDispatcher):
             self.birthday = settings['birthday']
             self.height = settings['height']
             self.weight = settings['weight']
-            self.lighting_mode = settings['lightingMode']
-            #self.week_content = settings['week_content'] # Jonthan did not implemented this until now in his settings file
-            #self.current_content = settings['current_content'] # Jonthan did not implemented this until now in his settings file
+            self.lighting_mode = settings['lightingMode' if sys.platform.startswith('linux') else 'lighting_mode']
+            self.current_content = settings['current_content']
             self.tags = settings['tags']
 
     def save(self):
@@ -72,12 +78,12 @@ class SettingsFileHandler(FileSystemEventHandler):
     Handler for the settings file watchdog.
     """
 
-    def __init__(self, settings_file_path, load_settings):
+    def __init__(self, settings_file_path, reload_settings):
         super().__init__()
         self.settings_file_path = settings_file_path
-        self.load_settings = load_settings
+        self.reload_settings = reload_settings
 
     def on_modified(self, event):
         if event.src_path != self.settings_file_path:
             return
-        self.load_settings()
+        self.reload_settings()

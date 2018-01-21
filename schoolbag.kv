@@ -1,6 +1,20 @@
+#:import ContentListItem content_management.ContentListItem
+#:import listadapter kivy.adapters.listadapter
+#:import ListItemLabel kivy.uix.listview
+#:import CompositeListItem kivy.uix.listview
+
+<Widget>:
+    color: .1, .1, .1, 1
+    canvas.before:
+        Color:
+            rgba: 1, 1, 1, 1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
 <Label>:
     font_size: sp(25)
-    halign: 'center'
+    halign: 'left'
 
 <TabbedPanel>:
     do_default_tab: False
@@ -8,39 +22,53 @@
     tab_height: pt(40)
     tab_width: self.height / 3
 
-<Management>:
-    canvas.before:
-        Color:
-            rgba: .949, .953, .954, 0
-        Rectangle:
-            size: self.size
-            pos: self.pos
+<Button>:
+    background_color: 0.341, 0.839, 0.576, 1
+    background_normal: ''
+    color: 1, 1, 1, 1
 
+<ListViewItem>:
+    background_color: 0, 0, 0, .1
+
+<Management>:
     TabbedPanelItem:
         text: 'Pack'
 
         GridLayout:
             cols: 2
 
-            Button:
-                text: 'Start reading'
-                size_hint_y: None
-                height: pt(40)
-                on_press: root.content_management.start()
-            Button:
-                text: 'Stop reading'
-                size_hint_y: None
-                height: pt(40)
-                on_press: root.content_management.stop()
+#            Button:
+#                text: 'Start reading'
+#                size_hint_y: None
+#                height: pt(40)
+#                on_press: root.content_management.start()
+#            Button:
+#                text: 'Stop reading'
+#                size_hint_y: None
+#                height: pt(40)
+#                on_press: root.content_management.stop()
             ListView:
-                item_strings: root.settings.current_content
+                item_strings: ['{0} ({1})'.format(root.settings.tags[tag]['name'], tag) for tag in root.settings.current_content]
+#                adapter: listadapter.ListAdapter(
+#                    data=[{'name': root.settings.tags[tag]['name'], 'tag': tag} \
+#                    for tag in root.settings.current_content],
+#                    args_converter=lambda row, item: { \
+#                    'orientation': 'vertical', 'cls_dicts': [\
+#                    {'cls': ListItemLabel, 'kwargs': { 'text': item['name'] }},\
+#                    {'cls': ListItemLabel, 'kwargs': { 'text': item['tag'] }},\
+#                    ]},
+#                    selection_mode='single',
+#                    allow_empty_selction=False,
+#                    cls=CompositeListItem)
             ListView:
 
     TabbedPanelItem:
         text: 'Trim'
 
-        Label:
-            text: 'Trimming mode is active.\nWatch for the LEDs on the shoulder straps.'
+        BoxLayout:
+            Label:
+                text: 'Trimming mode is active.\nWatch for the LEDs on the shoulder straps.'
+                halign: 'center'
 
     TabbedPanelItem:
         text: 'Configure'
