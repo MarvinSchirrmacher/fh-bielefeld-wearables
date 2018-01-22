@@ -1,4 +1,6 @@
+import datetime
 import json
+import locale
 from os.path import dirname, abspath
 
 import sys
@@ -9,6 +11,16 @@ from watchdog.observers import Observer
 
 
 class Settings(EventDispatcher):
+    WEEKDAY = {
+        0: "monday",
+        1: "tuesday",
+        2: "wednesday",
+        3: "thursday",
+        4: "friday",
+        5: "saturday",
+        6: "sunday",
+    }
+
     gender = OptionProperty('Männlich', options=['Männlich', 'Weiblich']) \
         if sys.platform.startswith('linux') else \
         OptionProperty('male', options=['male', 'female'])
@@ -42,6 +54,11 @@ class Settings(EventDispatcher):
         Opens the json settings file and reads in all values.
         :return:
         """
+        locale.setlocale(locale.LC_ALL, 'de_DE.UTF-8')
+        now = datetime.datetime.now()
+        self.current_day = self.WEEKDAY[now.weekday()]
+        self.current_day_translated = now.strftime('%A')
+
         with open(self.__settings_file_path) as settings_file:
             settings = json.load(settings_file)
             self.gender = settings['gender']
@@ -49,8 +66,9 @@ class Settings(EventDispatcher):
             self.height = settings['height']
             self.weight = settings['weight']
             self.lighting_mode = settings['lightingMode' if sys.platform.startswith('linux') else 'lighting_mode']
-            self.current_content = settings['current_content']
             self.tags = settings['tags']
+            self.target_content = [tag for tag in self.tags if self.tags[tag][self.current_day] == "1"]
+            self.current_content = settings['current_content']
 
     def save(self):
         """

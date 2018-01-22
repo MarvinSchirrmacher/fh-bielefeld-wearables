@@ -1,6 +1,5 @@
 import sys
 
-from kivy.adapters.listadapter import ListAdapter
 from kivy.clock import Clock
 from kivy.properties import StringProperty, ListProperty, partial
 

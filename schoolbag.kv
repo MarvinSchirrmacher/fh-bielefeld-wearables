@@ -32,7 +32,7 @@
 
 <Management>:
     TabbedPanelItem:
-        text: 'Pack'
+        text: 'Packen'
 
         GridLayout:
             cols: 2
@@ -47,6 +47,10 @@
 #                size_hint_y: None
 #                height: pt(40)
 #                on_press: root.content_management.stop()
+            Label:
+                text: 'Aktuelle Schulsachen'
+            Label:
+                text: 'Benötigte Schulsachen (%s)' % root.settings.current_day_translated
             ListView:
                 item_strings: ['{0} ({1})'.format(root.settings.tags[tag]['name'], tag) for tag in root.settings.current_content]
 #                adapter: listadapter.ListAdapter(
@@ -61,17 +65,18 @@
 #                    allow_empty_selction=False,
 #                    cls=CompositeListItem)
             ListView:
+                item_strings: ['{0} ({1})'.format(root.settings.tags[tag]['name'], tag) for tag in root.settings.target_content]
 
     TabbedPanelItem:
-        text: 'Trim'
+        text: 'Trimmen'
 
         BoxLayout:
             Label:
-                text: 'Trimming mode is active.\nWatch for the LEDs on the shoulder straps.'
+                text: 'Trimmmodus ist aktiv.\n Achte beim Trimmen auf die LEDs der Schultergurte.'
                 halign: 'center'
 
     TabbedPanelItem:
-        text: 'Configure'
+        text: 'Einstellungen'
 
         BoxLayout:
             orientation: 'vertical'
@@ -80,15 +85,15 @@
                 orientation: 'horizontal'
 
                 Label:
-                    text: 'Gender'
+                    text: 'Geschlecht'
                 Label:
-                    text: str(root.settings.gender)
+                    text: root.settings.gender
 
             BoxLayout:
                 orientation: 'horizontal'
 
                 Label:
-                    text: 'Birthday'
+                    text: 'Geburtstag'
                 Label:
                     text: str(root.settings.birthday)
 
@@ -96,22 +101,22 @@
                 orientation: 'horizontal'
 
                 Label:
-                    text: 'Height'
+                    text: 'Größe'
                 Label:
-                    text: str(root.settings.height)
+                    text: '%d cm' % root.settings.height
 
             BoxLayout:
                 orientation: 'horizontal'
 
                 Label:
-                    text: 'Weight'
+                    text: 'Gewicht'
                 Label:
-                    text: str(root.settings.weight)
+                    text: '%d kg' % root.settings.weight
 
             BoxLayout:
                 orientation: 'horizontal'
 
                 Label:
-                    text: 'Lighting mode'
+                    text: 'Beleuchtungsmodus'
                 Label:
-                    text: str(root.settings.lighting_mode)
+                    text: root.settings.lighting_mode

@@ -13,19 +13,39 @@
 	"tags": {
 		"00112233": {
 			"name": "Mathebuch",
-			"image": ""
+			"image": "0",
+            "monday": "0",
+            "tuesday": "0",
+            "wednesday": "0",
+            "thursday": "0",
+            "friday": "1"
 		},
 		"44556677": {
 			"name": "Deutschheft",
-			"image": ""
+			"image": "1",
+            "monday": "1",
+            "tuesday": "0",
+            "wednesday": "1",
+            "thursday": "0",
+            "friday": "0"
 		},
 		"8899AABB": {
 			"name": "Englischbuch",
-			"image": ""
+			"image": "2",
+            "monday": "1",
+            "tuesday": "1",
+            "wednesday": "0",
+            "thursday": "1",
+            "friday": "1"
 		},
 		"CCDDEEFF": {
 			"name": "Federmappe",
-			"image": ""
+			"image": "3",
+            "monday": "1",
+            "tuesday": "1",
+            "wednesday": "1",
+            "thursday": "1",
+            "friday": "1"
 		}
 	}
 }
