@@ -27,7 +27,7 @@
     background_normal: ''
     color: 1, 1, 1, 1
 
-<ListViewItem>:
+<ListView>:
     background_color: 0, 0, 0, .1
 
 <Management>:
@@ -50,22 +50,12 @@
             Label:
                 text: 'Aktuelle Schulsachen'
             Label:
-                text: 'Benötigte Schulsachen (%s)' % root.settings.current_day_translated
+                text: 'Benötigte Schulsachen\n(%s)' % root.settings.current_day_translated
             ListView:
-                item_strings: ['{0} ({1})'.format(root.settings.tags[tag]['name'], tag) for tag in root.settings.current_content]
-#                adapter: listadapter.ListAdapter(
-#                    data=[{'name': root.settings.tags[tag]['name'], 'tag': tag} \
-#                    for tag in root.settings.current_content],
-#                    args_converter=lambda row, item: { \
-#                    'orientation': 'vertical', 'cls_dicts': [\
-#                    {'cls': ListItemLabel, 'kwargs': { 'text': item['name'] }},\
-#                    {'cls': ListItemLabel, 'kwargs': { 'text': item['tag'] }},\
-#                    ]},
-#                    selection_mode='single',
-#                    allow_empty_selction=False,
-#                    cls=CompositeListItem)
+                item_strings: ['{0} ({1})'.format(root.settings.tags[tag]['materialName'], tag) for tag in root.settings.current_content]
+                # adapter: listadapter.ListAdapter(data=[{'name': root.settings.tags[tag]['name'], 'tag': tag} for tag in root.settings.current_content], args_converter=lambda row, item: { 'orientation': 'vertical', 'cls_dicts': [{'cls': ListItemLabel, 'kwargs': { 'text': item['name'] }}, {'cls': ListItemLabel, 'kwargs': { 'text': item['tag'] }}]}, cls=CompositeListItem)
             ListView:
-                item_strings: ['{0} ({1})'.format(root.settings.tags[tag]['name'], tag) for tag in root.settings.target_content]
+                item_strings: ['{0} ({1})'.format(root.settings.tags[tag]['materialName'], tag) for tag in root.settings.target_content]
 
     TabbedPanelItem:
         text: 'Trimmen'

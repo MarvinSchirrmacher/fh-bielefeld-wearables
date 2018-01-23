@@ -35,9 +35,9 @@ class LedStripeController:
         self.__settings.bind(lighting_mode=self.set_mode)
 
         self.__mode_initializer = {
-            'Manuell': self.set_mode_manual,
-            'Automatik': self.set_mode_automatic,
-            'Ausgeschaltet': self.set_mode_off
+            'manual': self.set_mode_manual,
+            'automatic': self.set_mode_automatic,
+            'off': self.set_mode_off
         }
 
         self.__animation = None

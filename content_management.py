@@ -95,6 +95,9 @@ class ContentManagement:
         :return:
         """
         print('[Content management] Update current configuration')
+        if uid not in self.__settings.tags:
+            self.__settings.register_new_tag(uid)
+
         if uid in self.__settings.current_content:
             self.__settings.current_content.remove(uid)
         else:
