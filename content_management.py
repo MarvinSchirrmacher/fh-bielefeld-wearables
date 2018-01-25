@@ -11,6 +11,9 @@ else:
     from mock.mfrc522_mock import MFRC522
 
 
+RFID_REGISTRATION_ACCEPTANCE = 3
+
+
 class ContentManagement:
     """
     Manages the school bag content.
@@ -29,18 +32,22 @@ class ContentManagement:
         self.__reader = None
         self.__authentication_key = [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]
         self.__authentication_key_length = 8
-
         self.__rfid_reader = MFRC522()
-        self.__read_callback = self.__read
+        self.__rfid_registration = {
+            'uid': [],
+            'counter': 0,
+            'buffer': 0
+        }
+        self.start()
 
-    def start(self, read_interval: float = 1 / 2.):
+    def start(self, read_interval: float = 1 / 10.):
         """
         Starts the cyclically reading for any rfid tags.
         :param read_interval: The read frequency in seconds.
         :return:
         """
         self.__reader = Clock.schedule_interval(
-            partial(self.__read_callback, self), read_interval)
+            partial(self.__read, self), read_interval)
 
     def stop(self):
         """
@@ -57,16 +64,37 @@ class ContentManagement:
         """
         status, tag_type = self.__rfid_reader.MFRC522_Request(self.__rfid_reader.PICC_REQIDL)
         if status != self.__rfid_reader.MI_OK:
+            if self.__rfid_registration['buffer'] < 1:
+                self.__rfid_registration['buffer'] += 1
+            else:
+                self.__rfid_registration['counter'] = 0
             return
+
+        self.__rfid_registration['buffer'] = 0
 
         status, uid = self.__rfid_reader.MFRC522_Anticoll()
         if not status == self.__rfid_reader.MI_OK:
+            print('[Content management] RFID anticoll failed')
             return
 
         if not self.__authenticate(uid):
+            print('[Content management] RFID authentication failed')
             return
 
-        self.__update_current_configuration(uid)
+        if uid == self.__rfid_registration['uid']:
+            self.__rfid_registration['counter'] += 1
+        else:
+            self.__rfid_registration['uid'] = uid
+            self.__rfid_registration['counter'] = 1
+
+        if self.__rfid_registration['counter'] < RFID_REGISTRATION_ACCEPTANCE:
+            return
+
+        self.__rfid_registration['counter'] = 0
+
+        print('[Content management] Accepted uid')
+        uid_hex = [format(fragment, '02x') for fragment in uid]
+        self.__update_current_configuration('-'.join(uid_hex))
 
     def __authenticate(self, uid):
         """
@@ -80,28 +108,32 @@ class ContentManagement:
             self.__authentication_key_length,
             self.__authentication_key, uid)
 
-        if status == self.__rfid_reader.MI_OK:
-            self.__rfid_reader.MFRC522_Read(self.__authentication_key_length)
-            self.__rfid_reader.MFRC522_StopCrypto1()
-            return True
-        else:
+        if status != self.__rfid_reader.MI_OK:
             return False
 
-    def __update_current_configuration(self, uid):
+        self.__rfid_reader.MFRC522_Read(self.__authentication_key_length)
+        self.__rfid_reader.MFRC522_StopCrypto1()
+        return True
+
+    def __update_current_configuration(self, tag):
         """
         Adds the given uid to the current configuration if it does not contains
         the uid, else removes the uid from the current configuration.
-        :param uid: The uid to look for.
+        :param tag: The tag uid to look for.
         :return:
         """
         print('[Content management] Update current configuration')
-        if uid not in self.__settings.tags:
-            self.__settings.register_new_tag(uid)
+        if tag not in self.__settings.tags:
+            print('[Content management] The tag "%s" is new and have to be registered via smartphone app' % tag)
+            self.__settings.register_new_tag(tag)
+            return
 
-        if uid in self.__settings.current_content:
-            self.__settings.current_content.remove(uid)
+        if tag in self.__settings.current_content:
+            print('[Content management] Remove tag form current content')
+            self.__settings.current_content.remove(tag)
         else:
-            self.__settings.current_content.append(uid)
+            print('[Content management] Append tag to current content')
+            self.__settings.current_content.append(tag)
 
 
 class ContentListItem(ListProperty):
