@@ -5,6 +5,7 @@
     "lightingMode": "manual",
     "gender": "female",
     "currentContent": [],
+    "animationType": "rainbow",
     "tags": {
         "12582": {
             "materialName": "Sachkundebuch",

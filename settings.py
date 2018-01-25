@@ -14,13 +14,13 @@ from watchdog.observers import Observer
 
 class Settings(EventDispatcher):
     WEEKDAY = {
-        0: "monday",
-        1: "tuesday",
-        2: "wednesday",
-        3: "thursday",
-        4: "friday",
-        5: "saturday",
-        6: "sunday",
+        0: 'monday',
+        1: 'tuesday',
+        2: 'wednesday',
+        3: 'thursday',
+        4: 'friday',
+        5: 'saturday',
+        6: 'sunday'
     }
     FILE_WRITE_PERMISSION = 'w'
 
@@ -29,6 +29,7 @@ class Settings(EventDispatcher):
     height = NumericProperty(0)
     weight = NumericProperty(0)
     lighting_mode = OptionProperty('off', options=['off', 'manual', 'automatic'])
+    animation_type = StringProperty()
     current_content = ListProperty()
     target_content = ListProperty()
 
@@ -65,6 +66,7 @@ class Settings(EventDispatcher):
                 'height': self.height,
                 'weight': self.weight,
                 'lightingMode': self.lighting_mode,
+                'animationType': self.animation_type,
                 'tags': self.tags,
                 'currentContent': self.current_content
             }
@@ -76,6 +78,8 @@ class Settings(EventDispatcher):
         :param tag:
         :return:
         """
+        if tag in self.__new_tags:
+            return
         self.__new_tags.append(tag)
         self.__update_new_tags_file()
 
@@ -100,6 +104,7 @@ class Settings(EventDispatcher):
             self.height = settings['height']
             self.weight = settings['weight']
             self.lighting_mode = settings['lightingMode']
+            self.animation_type = settings['animationType']
             self.tags = settings['tags']
             self.target_content = [tag for tag in self.tags if self.tags[tag][self.current_day] == "1"]
             self.current_content = settings['currentContent']

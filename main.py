@@ -29,6 +29,10 @@ class SchoolBagApp(App):
     def build(self):
         return Management()
 
+    def on_stop(self):
+        self.root.content_management.stop_rfid_reading()
+        self.root.led_stripe_controller.stop_animation()
+
 
 if __name__ == '__main__':
     SchoolBagApp().run()

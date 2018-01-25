@@ -1,6 +1,9 @@
 from functools import partial
 
 import sys
+from threading import Thread, Event
+
+import time
 from kivy.clock import Clock
 
 if sys.platform.startswith('linux'):
@@ -9,11 +12,15 @@ else:
     from mock.neopixel_mock import ws, Adafruit_NeoPixel, Color
 
 RGB_MAX = 255
+BRIGHTNESS_MAX = 255
+COLOR_WHITE = Color(RGB_MAX, RGB_MAX, RGB_MAX)
+COLOR_BLACK = Color(0, 0, 0)
+
 LED_COUNT = 30  # Number of LED pixels.
 LED_PIN = 18  # GPIO pin connected to the pixels (18 uses PWM!).
 LED_FREQ_HZ = 800000  # LED signal frequency in hertz (usually 800khz)
 LED_DMA = 10  # DMA channel to use for generating signal (try 10)
-LED_BRIGHTNESS = 255  # Set to 0 for darkest and 255 for brightest
+LED_BRIGHTNESS = int(BRIGHTNESS_MAX * 0.5)  # Set to 0 for darkest and 255 for brightest
 LED_INVERT = False  # True to invert the signal (when using NPN transistor level shift)
 LED_CHANNEL = 0  # set to '1' for GPIOs 13, 19, 41, 45 or 53
 LED_STRIP = ws.WS2811_STRIP_GRB  # Strip type and colour ordering
@@ -32,39 +39,47 @@ class LedStripeController:
         self.__stripe.begin()
 
         self.__settings = settings
-        self.__settings.bind(lighting_mode=self.set_mode)
+        self.__settings.bind(lighting_mode=self.set_mode, animation_type=self.set_animation)
 
         self.__mode_initializer = {
             'manual': self.set_mode_manual,
             'automatic': self.set_mode_automatic,
             'off': self.set_mode_off
         }
+        self.__animation_methods = {
+            'constant': self.__constant,
+            'rainbow': self.__rainbow,
+            'cycle': self.__rainbow_cycle,
+            'wipe': self.__color_wipe,
+            'chase': self.__theater_chase
+        }
 
-        self.__animation = None
+        self.__animation_thread = None
+        self.__stop_animation_thread = Event()
         self.__animation_interval = animation_interval
-        self.__animation_position = 0
+        self.__pixel_iteration = 0
+        self.__color_iteration = 0
+        self.__animation_toggle = 0
+        self.__animation_method = self.__animation_methods[self.__settings.animation_type]
 
-    def set_mode(self, instance, value):
+    def set_mode(self, instance, mode):
         """
-        Sets the lighting mode and start any action if needed.
+        Sets the lighting mode and starts any action if needed.
 
         :param instance: The calling event instance.
-        :param value: The new mode.
+        :param mode: The new mode.
         :return:
         """
-        if not self.__settings.lighting_mode == 'Manuell':
-            Clock.unschedule(self.__animation)
-
-        self.__mode_initializer[value]()
-        self.__settings.lighting_mode = value
+        self.stop_animation()
+        self.__mode_initializer[mode]()
 
     def set_mode_off(self):
         """
-        Switches all LEDs off.
+        Switches off all LEDs.
         :return:
         """
         for i in range(self.__stripe.numPixels()):
-            self.__stripe.setPixelColor(i, Color(0, 0, 0))
+            self.__stripe.setPixelColor(i, COLOR_BLACK)
         self.__stripe.show()
 
     def set_mode_manual(self):
@@ -73,8 +88,7 @@ class LedStripeController:
         switching between on and off.
         :return:
         """
-        self.__animation = Clock.schedule_interval(
-            partial(self.__rainbow_cycle, self), self.__animation_interval)
+        self.start_animation()
 
     def set_mode_automatic(self):
         """
@@ -83,31 +97,134 @@ class LedStripeController:
         """
         self.set_mode_off()
 
-    def __rainbow_cycle(self, *largs):
+    def set_animation(self, instance, animation_type):
         """
-        Draw rainbow that uniformly distributes itself across all pixels.
-        :param largs:
+        Sets the animation method corresponding to the animation type.
+        :param instance: The calling event instance.
+        :param animation_type: The name of the animation type to use.
         :return:
         """
-        number_of_pixels = self.__stripe.numPixels()
-        self.__increment_animation_position()
+        self.__animation_method = self.__animation_methods[animation_type]
 
-        for i in range(self.__stripe.numPixels()):
-            self.__stripe.setPixelColor(i, self.__wheel(
-                (int(i * (RGB_MAX + 1) / number_of_pixels) +
-                 self.__animation_position) & RGB_MAX))
+    def start_animation(self):
+        """
+        Starts the animation thread which cyclically calls the method to update
+        the currently selected animation.
+        :return:
+        """
+        if self.__animation_thread is not None \
+                and not self.__animation_thread.is_alive:
+            return
+        self.__animation_thread = Thread(target=self.__animation_thread_method)
+        self.__animation_thread.start()
+        print('[LED stripe controller] Started animation thread %s' %
+              str(self.__animation_thread))
+
+    def stop_animation(self):
+        """
+        Stops the animation thread if it is alive.
+        :return:
+        """
+        if self.__animation_thread is None:
+            return
+        if not self.__animation_thread.is_alive:
+            return
+
+        self.__stop_animation_thread.set()
+        print('[LED stripe controller] Triggered stopped event for animation thread')
+
+    def __animation_thread_method(self):
+        """
+        The thread method which cyclically calls the animation update method.
+        :return:
+        """
+        while True:
+            if self.__stop_animation_thread.is_set():
+                print('Stop animation thread')
+                return
+            self.__update_animation()
+            time.sleep(self.__animation_interval)
+
+    def __update_animation(self):
+        """
+        Increments the animation properties, updates the pixel configuration
+        and updates the LEDs.
+        :return:
+        """
+        self.__increment_animation_iteration()
+        self.__animation_method()
         self.__stripe.show()
 
-    def __increment_animation_position(self):
+    def __constant(self):
+        self.__stripe.setPixelColor(self.__pixel_iteration, COLOR_WHITE)
+
+    def __color_wipe(self):
+        """Wipe color across display a pixel at a time."""
+        prior_pixel = self.__pixel_iteration - 1 \
+            if self.__pixel_iteration >= 0 else self.__stripe.numPixels()
+        self.__stripe.setPixelColor(prior_pixel, COLOR_BLACK)
+        self.__stripe.setPixelColor(self.__pixel_iteration, COLOR_WHITE)
+
+    def __rainbow(self):
         """
-        Increments the animation position and resets it if RGB_MAX is reached.
+        Draw rainbow that fades across all pixels at once.
         :return:
         """
-        self.__animation_position += 1
-        if self.__animation_position == RGB_MAX + 1:
-            self.__animation_position = 0
+        for i in range(self.__stripe.numPixels()):
+            self.__stripe.setPixelColor(i, self.__wheel(
+                (self.__pixel_iteration + self.__color_iteration) & 255))
 
-    def __wheel(self, pos):
+    def __rainbow_cycle(self):
+        """
+        Draw rainbow that uniformly distributes itself across all pixels.
+        :return:
+        """
+        for i in range(self.__stripe.numPixels()):
+            self.__stripe.setPixelColor(i, self.__wheel(
+                (int(i * 256 / self.__stripe.numPixels()) + self.__color_iteration) & 255))
+
+    def __theater_chase(self):
+        """Movie theater light style chaser animation."""
+        pass
+    #     for i in range(0, self.__stripe.numPixels(), 3):
+    #         self.__stripe.setPixelColor(i + self.__animation_toggle, COLOR_WHITE)
+    #     strip.show()
+    #     time.sleep(wait_ms / 1000.0)
+    #     for i in range(0, self.__stripe.numPixels(), 3):
+    #         self.__stripe.setPixelColor(i + self.__animation_toggle, COLOR_BLACK)
+
+    def __theater_chase_rainbow(self):
+        """Rainbow movie theater light style chaser animation."""
+        pass
+    #     for j in range(256):
+    #         for q in range(3):
+    #             for i in range(0, strip.numPixels(), 3):
+    #                 strip.setPixelColor(i + q, wheel((i + j) % 255))
+    #             strip.show()
+    #             time.sleep(wait_ms / 1000.0)
+    #             for i in range(0, strip.numPixels(), 3):
+    #                 strip.setPixelColor(i + q, 0)
+
+    def __increment_animation_iteration(self):
+        """
+        Increments the animation properties and resets them if their maximum
+        values are reached.
+        :return:
+        """
+        self.__color_iteration += 1
+        if self.__color_iteration == RGB_MAX + 1:
+            self.__color_iteration = 0
+
+        self.__pixel_iteration += 1
+        if self.__pixel_iteration == self.__stripe.numPixels():
+            self.__pixel_iteration = 0
+
+        self.__animation_toggle += 1
+        if self.__animation_toggle == 3:
+            self.__animation_toggle = 0
+
+    @staticmethod
+    def __wheel(pos):
         """
         Generate rainbow colors across 0-255 positions.
         :param pos: The current animation position.

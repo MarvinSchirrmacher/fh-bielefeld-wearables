@@ -1,5 +1,7 @@
 import sys
+from threading import Thread, Event
 
+import time
 from kivy.clock import Clock
 from kivy.properties import StringProperty, ListProperty, partial
 
@@ -11,7 +13,7 @@ else:
     from mock.mfrc522_mock import MFRC522
 
 
-RFID_REGISTRATION_ACCEPTANCE = 3
+RFID_REGISTRATION_ACCEPTANCE = 2
 
 
 class ContentManagement:
@@ -29,7 +31,8 @@ class ContentManagement:
         :param settings: The settings object to read from.
         """
         self.__settings = settings
-        self.__reader = None
+        self.__read_thread = None
+        self.__stop_read_thread = Event()
         self.__authentication_key = [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]
         self.__authentication_key_length = 8
         self.__rfid_reader = MFRC522()
@@ -38,25 +41,40 @@ class ContentManagement:
             'counter': 0,
             'buffer': 0
         }
-        self.start()
+        self.start_rfid_reading()
 
-    def start(self, read_interval: float = 1 / 10.):
+    def start_rfid_reading(self):
         """
         Starts the cyclically reading for any rfid tags.
-        :param read_interval: The read frequency in seconds.
         :return:
         """
-        self.__reader = Clock.schedule_interval(
-            partial(self.__read, self), read_interval)
+        if self.__read_thread is not None and not self.__read_thread.is_alive:
+            return
 
-    def stop(self):
+        self.__read_thread = Thread(target=self.__read_thread_method)
+        self.__read_thread.start()
+
+    def stop_rfid_reading(self):
         """
         Stops the cyclically reading for any rfid tags.
         :return:
         """
-        Clock.unschedule(self.__reader)
+        if self.__read_thread is None:
+            return
+        if not self.__read_thread.is_alive:
+            return
 
-    def __read(self, *largs):
+        self.__stop_read_thread.set()
+
+    def __read_thread_method(self):
+        while True:
+            if self.__stop_read_thread.is_set():
+                return
+
+            self.__read()
+            time.sleep(0.25)
+
+    def __read(self):
         """
         Reads any tag and updates the current configuration if a tag was
         detected.
