@@ -1,0 +1,112 @@
+#:import ContentListItem content_management.ContentListItem
+#:import listadapter kivy.adapters.listadapter
+#:import ListItemLabel kivy.uix.listview
+#:import CompositeListItem kivy.uix.listview
+
+<Widget>:
+    color: .1, .1, .1, 1
+    font_name: './fonts/calibri.ttf'
+    canvas.before:
+        Color:
+            rgba: 1, 1, 1, 1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+<Label>:
+    font_size: sp(30)
+
+<TabbedPanel>:
+    do_default_tab: False
+    tab_pos: 'right_top'
+    tab_height: pt(40)
+    tab_width: self.height / 3
+
+<Button>:
+    background_color: 0.341, 0.839, 0.576, 1
+    background_normal: ''
+    color: 1, 1, 1, 1
+
+<ListView>:
+    background_color: 0, 0, 0, .1
+
+<Management>:
+    TabbedPanelItem:
+        text: 'Packen'
+
+        GridLayout:
+            cols: 2
+
+#            Button:
+#                text: 'Start reading'
+#                size_hint_y: None
+#                height: pt(40)
+#                on_press: root.content_management.start()
+#            Button:
+#                text: 'Stop reading'
+#                size_hint_y: None
+#                height: pt(40)
+#                on_press: root.content_management.stop()
+            Label:
+                text: 'Aktuelle Schulsachen'
+            Label:
+                text: 'Benötigte Schulsachen\n(%s)' % root.settings.current_day_translated
+            ListView:
+                item_strings: ['{0} ({1})'.format(root.settings.tags[tag]['materialName'], tag) for tag in root.settings.current_content]
+                # adapter: listadapter.ListAdapter(data=[{'name': root.settings.tags[tag]['name'], 'tag': tag} for tag in root.settings.current_content], args_converter=lambda row, item: { 'orientation': 'vertical', 'cls_dicts': [{'cls': ListItemLabel, 'kwargs': { 'text': item['name'] }}, {'cls': ListItemLabel, 'kwargs': { 'text': item['tag'] }}]}, cls=CompositeListItem)
+            ListView:
+                item_strings: ['{0} ({1})'.format(root.settings.tags[tag]['materialName'], tag) for tag in root.settings.target_content]
+
+    TabbedPanelItem:
+        text: 'Trimmen'
+
+        BoxLayout:
+            Label:
+                text: 'Trimmmodus ist aktiv.\n Achte beim Trimmen auf die LEDs der Schultergurte.'
+                halign: 'center'
+
+    TabbedPanelItem:
+        text: 'Meta'
+
+        BoxLayout:
+            orientation: 'vertical'
+
+            BoxLayout:
+                orientation: 'horizontal'
+
+                Label:
+                    text: 'Geschlecht'
+                Label:
+                    text: root.settings.gender
+
+            BoxLayout:
+                orientation: 'horizontal'
+
+                Label:
+                    text: 'Geburtstag'
+                Label:
+                    text: str(root.settings.birthday)
+
+            BoxLayout:
+                orientation: 'horizontal'
+
+                Label:
+                    text: 'Größe'
+                Label:
+                    text: '%d cm' % root.settings.height
+
+            BoxLayout:
+                orientation: 'horizontal'
+
+                Label:
+                    text: 'Gewicht'
+                Label:
+                    text: '%d kg' % root.settings.weight
+
+            BoxLayout:
+                orientation: 'horizontal'
+
+                Label:
+                    text: 'Beleuchtungsmodus'
+                Label:
+                    text: root.settings.lighting_mode

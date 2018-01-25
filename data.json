@@ -1,0 +1,137 @@
+{
+    "weight": "30",
+    "height": "141",
+    "birthday": "21. Apr 2010",
+    "lightingMode": "manual",
+    "gender": "female",
+    "currentContent": [],
+    "animationType": "rainbow",
+    "tags": {
+        "12582": {
+            "materialName": "Sachkundebuch",
+            "imgName": "minion_4",
+            "monday": "0",
+            "tuesday": "0",
+            "wednesday": "1",
+            "thursday": "0",
+            "friday": "0"
+        },
+        "1234321": {
+            "materialName": "Hausaufgabenheft",
+            "imgName": "koopa",
+            "monday": "1",
+            "tuesday": "1",
+            "wednesday": "1",
+            "thursday": "1",
+            "friday": "1"
+        },
+        "1235543": {
+            "materialName": "Mathebuch",
+            "imgName": "mushroomGolden",
+            "monday": "1",
+            "tuesday": "1",
+            "wednesday": "0",
+            "thursday": "1",
+            "friday": "1"
+        },
+        "1258122": {
+            "materialName": "Schreibblock",
+            "imgName": "yoshi",
+            "monday": "1",
+            "tuesday": "1",
+            "wednesday": "1",
+            "thursday": "1",
+            "friday": "1"
+        },
+        "1263341": {
+            "materialName": "Deutschheft",
+            "imgName": "mario",
+            "monday": "1",
+            "tuesday": "1",
+            "wednesday": "0",
+            "thursday": "1",
+            "friday": "0"
+        },
+        "1552421": {
+            "materialName": "Kunstmappe",
+            "imgName": "rosalina",
+            "monday": "0",
+            "tuesday": "0",
+            "wednesday": "1",
+            "thursday": "0",
+            "friday": "0"
+        },
+        "5563441": {
+            "materialName": "Religionsheft",
+            "imgName": "plant",
+            "monday": "1",
+            "tuesday": "0",
+            "wednesday": "0",
+            "thursday": "0",
+            "friday": "1"
+        },
+        "12525421": {
+            "materialName": "Englischbuch",
+            "imgName": "zombie",
+            "monday": "0",
+            "tuesday": "0",
+            "wednesday": "1",
+            "thursday": "0",
+            "friday": "1"
+        },
+        "3948756213": {
+            "materialName": "Material123",
+            "imgName": "wario",
+            "monday": "1",
+            "tuesday": "1",
+            "wednesday": "0",
+            "thursday": "0",
+            "friday": "0"
+        },
+        "12954652171": {
+            "materialName": "TBD",
+            "imgName": "noImg",
+            "monday": "0",
+            "tuesday": "0",
+            "wednesday": "0",
+            "thursday": "0",
+            "friday": "0"
+        },
+        "neuerTag123": {
+            "materialName": "TBD",
+            "imgName": "noImg",
+            "monday": "0",
+            "tuesday": "0",
+            "wednesday": "0",
+            "thursday": "0",
+            "friday": "0"
+        },
+        "386520911332": {
+            "materialName": "TBD",
+            "imgName": "noImg",
+            "monday": "0",
+            "tuesday": "0",
+            "wednesday": "0",
+            "thursday": "0",
+            "friday": "0"
+        },
+        "newTag0": {
+            "materialName": "New Tag 0",
+            "imgName": "noImg",
+            "monday": "0",
+            "tuesday": "0",
+            "wednesday": "0",
+            "thursday": "0",
+            "friday": "0"
+        },
+        "newTag1": {
+            "materialName": "New Tag 1",
+            "imgName": "noImg",
+            "monday": "0",
+            "tuesday": "0",
+            "wednesday": "0",
+            "thursday": "0",
+            "friday": "0"
+        }
+    }
+}
