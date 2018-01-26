@@ -160,8 +160,7 @@ class LedStripeController:
 
     def __color_wipe(self):
         """Wipe color across display a pixel at a time."""
-        prior_pixel = self.__pixel_iteration - 1 \
-            if self.__pixel_iteration >= 0 else self.__stripe.numPixels()
+        prior_pixel = self.__pixel_iteration - 1 if self.__pixel_iteration > 0 else self.__stripe.numPixels() - 1
         self.__stripe.setPixelColor(prior_pixel, COLOR_BLACK)
         self.__stripe.setPixelColor(self.__pixel_iteration, COLOR_WHITE)
 
