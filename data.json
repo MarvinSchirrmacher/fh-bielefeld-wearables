@@ -1,137 +1,72 @@
 {
-    "weight": "30",
-    "height": "141",
-    "birthday": "21. Apr 2010",
-    "lightingMode": "manual",
     "gender": "female",
-    "currentContent": [],
-    "animationType": "rainbow",
+    "birthday": "21. Apr 2010",
+    "height": 132,
+    "weight": 30,
+    "lightingMode": "manual",
+    "animationType": "cycle",
     "tags": {
-        "12582": {
-            "materialName": "Sachkundebuch",
-            "imgName": "minion_4",
-            "monday": "0",
+        "9c-b8-31-3b-2e": {
+            "materialName": "Keksdose",
+            "imgName": "duck",
+            "monday": "1",
             "tuesday": "0",
             "wednesday": "1",
             "thursday": "0",
-            "friday": "0"
+            "friday": "1"
         },
-        "1234321": {
-            "materialName": "Hausaufgabenheft",
-            "imgName": "koopa",
+        "d0-d6-77-7a-0b": {
+            "materialName": "Brotdose",
+            "imgName": "bat",
             "monday": "1",
             "tuesday": "1",
             "wednesday": "1",
             "thursday": "1",
             "friday": "1"
         },
-        "1235543": {
-            "materialName": "Mathebuch",
-            "imgName": "mushroomGolden",
-            "monday": "1",
-            "tuesday": "1",
-            "wednesday": "0",
-            "thursday": "1",
-            "friday": "1"
-        },
-        "1258122": {
-            "materialName": "Schreibblock",
-            "imgName": "yoshi",
-            "monday": "1",
-            "tuesday": "1",
-            "wednesday": "1",
-            "thursday": "1",
-            "friday": "1"
-        },
-        "1263341": {
+        "80-34-7b-7a-b5": {
             "materialName": "Deutschheft",
-            "imgName": "mario",
+            "imgName": "dinosaur",
             "monday": "1",
             "tuesday": "1",
             "wednesday": "0",
             "thursday": "1",
             "friday": "0"
         },
-        "1552421": {
-            "materialName": "Kunstmappe",
-            "imgName": "rosalina",
-            "monday": "0",
-            "tuesday": "0",
-            "wednesday": "1",
-            "thursday": "0",
-            "friday": "0"
-        },
-        "5563441": {
-            "materialName": "Religionsheft",
-            "imgName": "plant",
+        "10-35-82-7a-dd": {
+            "materialName": "Mathebuch",
+            "imgName": "fox",
             "monday": "1",
-            "tuesday": "0",
-            "wednesday": "0",
-            "thursday": "0",
-            "friday": "1"
-        },
-        "12525421": {
-            "materialName": "Englischbuch",
-            "imgName": "zombie",
-            "monday": "0",
             "tuesday": "0",
             "wednesday": "1",
             "thursday": "0",
             "friday": "1"
         },
-        "3948756213": {
-            "materialName": "Material123",
-            "imgName": "wario",
-            "monday": "1",
-            "tuesday": "1",
-            "wednesday": "0",
-            "thursday": "0",
-            "friday": "0"
-        },
-        "12954652171": {
-            "materialName": "TBD",
-            "imgName": "noImg",
+        "e0-40-80-7a-5a": {
+            "materialName": "Cheese Burger",
+            "imgName": "dolphin",
             "monday": "0",
             "tuesday": "0",
             "wednesday": "0",
             "thursday": "0",
             "friday": "0"
         },
-        "neuerTag123": {
-            "materialName": "TBD",
-            "imgName": "noImg",
-            "monday": "0",
-            "tuesday": "0",
-            "wednesday": "0",
-            "thursday": "0",
-            "friday": "0"
-        },
-        "386520911332": {
-            "materialName": "TBD",
-            "imgName": "noImg",
-            "monday": "0",
-            "tuesday": "0",
-            "wednesday": "0",
-            "thursday": "0",
-            "friday": "0"
-        },
-        "newTag0": {
-            "materialName": "New Tag 0",
-            "imgName": "noImg",
-            "monday": "0",
-            "tuesday": "0",
-            "wednesday": "0",
-            "thursday": "0",
-            "friday": "0"
-        },
-        "newTag1": {
-            "materialName": "New Tag 1",
-            "imgName": "noImg",
+        "c0-2a-78-7a-e8": {
+            "materialName": "Joint",
+            "imgName": "drybone",
             "monday": "0",
             "tuesday": "0",
             "wednesday": "0",
             "thursday": "0",
             "friday": "0"
         }
-    }
+    },
+    "currentContent": [
+        "d0-d6-77-7a-0b",
+        "80-34-7b-7a-b5",
+        "e0-40-80-7a-5a",
+        "10-35-82-7a-dd",
+        "c0-2a-78-7a-e8",
+        "9c-b8-31-3b-2e"
+    ]
 }
