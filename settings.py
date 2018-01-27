@@ -106,7 +106,10 @@ class Settings(EventDispatcher):
             self.lighting_mode = settings['lightingMode']
             self.animation_type = settings['animationType']
             self.tags = settings['tags']
-            self.target_content = [tag for tag in self.tags if self.tags[tag][self.current_day] == "1"]
+            self.target_content = [
+                tag for tag in self.tags if
+                self.current_day in self.tags[tag]
+                and self.tags[tag][self.current_day] == "1"]
             self.current_content = settings['currentContent']
 
     def __read_in_new_tags_file(self):
