@@ -1,10 +1,6 @@
-from functools import partial
-
 import sys
-from threading import Thread, Event
-
 import time
-from kivy.clock import Clock
+from threading import Thread, Event
 
 if sys.platform.startswith('linux'):
     from neopixel import ws, Adafruit_NeoPixel, Color
@@ -27,6 +23,15 @@ LED_STRIP = ws.WS2811_STRIP_GRB  # Strip type and colour ordering
 
 
 class LedStripeController:
+    LIGHTING_AREA = {
+        'rearTop': [22, 23, 24, 25, 26, 27, 28, 29],
+        'rearBottom': [4, 5, 6, 7, 8, 9],
+        'rearLeft': [10, 11, 12, 13],
+        'rearRight': [0, 1, 2, 3],
+        'frontLeft': [14, 15, 16, 17],
+        'frontRight': [18, 19, 20, 21]
+    }
+
     def __init__(self, settings, animation_interval: float = 1 / 50.):
         """
         Initializes the led stripe and sets the modes and animations.
@@ -141,6 +146,7 @@ class LedStripeController:
         while True:
             if self.__stop_animation_thread.is_set():
                 print('Stop animation thread')
+                self.set_mode_off()
                 return
             self.__update_animation()
             time.sleep(self.__animation_interval)
@@ -152,17 +158,21 @@ class LedStripeController:
         :return:
         """
         self.__increment_animation_iteration()
-        self.__animation_method()
-        self.__stripe.show()
+        if self.__animation_method():
+            self.__stripe.show()
 
     def __constant(self):
+        if self.__stripe.getPixelColor(self.__pixel_iteration) == COLOR_WHITE:
+            return False
         self.__stripe.setPixelColor(self.__pixel_iteration, COLOR_WHITE)
+        return True
 
     def __color_wipe(self):
         """Wipe color across display a pixel at a time."""
         prior_pixel = self.__pixel_iteration - 1 if self.__pixel_iteration > 0 else self.__stripe.numPixels() - 1
         self.__stripe.setPixelColor(prior_pixel, COLOR_BLACK)
         self.__stripe.setPixelColor(self.__pixel_iteration, COLOR_WHITE)
+        return True
 
     def __rainbow(self):
         """
@@ -172,6 +182,7 @@ class LedStripeController:
         for i in range(self.__stripe.numPixels()):
             self.__stripe.setPixelColor(i, self.__wheel(
                 (self.__pixel_iteration + self.__color_iteration) & 255))
+        return True
 
     def __rainbow_cycle(self):
         """
@@ -181,10 +192,11 @@ class LedStripeController:
         for i in range(self.__stripe.numPixels()):
             self.__stripe.setPixelColor(i, self.__wheel(
                 (int(i * 256 / self.__stripe.numPixels()) + self.__color_iteration) & 255))
+        return True
 
     def __theater_chase(self):
         """Movie theater light style chaser animation."""
-        pass
+        return False
     #     for i in range(0, self.__stripe.numPixels(), 3):
     #         self.__stripe.setPixelColor(i + self.__animation_toggle, COLOR_WHITE)
     #     strip.show()
@@ -194,7 +206,7 @@ class LedStripeController:
 
     def __theater_chase_rainbow(self):
         """Rainbow movie theater light style chaser animation."""
-        pass
+        return False
     #     for j in range(256):
     #         for q in range(3):
     #             for i in range(0, strip.numPixels(), 3):
