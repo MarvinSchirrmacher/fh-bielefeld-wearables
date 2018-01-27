@@ -3,7 +3,7 @@
     "birthday": "21. Apr 2010",
     "height": 132,
     "weight": 30,
-    "lightingMode": "manual",
+    "lightingMode": "off",
     "animationType": "cycle",
     "tags": {
         "9c-b8-31-3b-2e": {
@@ -53,7 +53,7 @@
         },
         "c0-2a-78-7a-e8": {
             "materialName": "Joint",
-            "imgName": "drybone",
+            "imgName": "coala",
             "monday": "0",
             "tuesday": "0",
             "wednesday": "0",

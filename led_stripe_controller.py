@@ -10,13 +10,14 @@ else:
 RGB_MAX = 255
 BRIGHTNESS_MAX = 255
 COLOR_WHITE = Color(RGB_MAX, RGB_MAX, RGB_MAX)
+COLOR_WHITE_0_5 = Color(127, 127, 127)
 COLOR_BLACK = Color(0, 0, 0)
 
 LED_COUNT = 30  # Number of LED pixels.
 LED_PIN = 18  # GPIO pin connected to the pixels (18 uses PWM!).
 LED_FREQ_HZ = 800000  # LED signal frequency in hertz (usually 800khz)
 LED_DMA = 10  # DMA channel to use for generating signal (try 10)
-LED_BRIGHTNESS = int(BRIGHTNESS_MAX * 0.5)  # Set to 0 for darkest and 255 for brightest
+LED_BRIGHTNESS = int(BRIGHTNESS_MAX * 1)  # Set to 0 for darkest and 255 for brightest
 LED_INVERT = False  # True to invert the signal (when using NPN transistor level shift)
 LED_CHANNEL = 0  # set to '1' for GPIOs 13, 19, 41, 45 or 53
 LED_STRIP = ws.WS2811_STRIP_GRB  # Strip type and colour ordering
@@ -162,9 +163,9 @@ class LedStripeController:
             self.__stripe.show()
 
     def __constant(self):
-        if self.__stripe.getPixelColor(self.__pixel_iteration) == COLOR_WHITE:
+        if self.__stripe.getPixelColor(self.__pixel_iteration) == COLOR_WHITE_0_5:
             return False
-        self.__stripe.setPixelColor(self.__pixel_iteration, COLOR_WHITE)
+        self.__stripe.setPixelColor(self.__pixel_iteration, COLOR_WHITE_0_5)
         return True
 
     def __color_wipe(self):

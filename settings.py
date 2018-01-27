@@ -1,15 +1,23 @@
 import datetime
 import json
 import locale
+import os
+import sys
 from os.path import dirname, abspath
 
-import sys
-
-import os
+from kivy.adapters.listadapter import ListAdapter
 from kivy.event import EventDispatcher
 from kivy.properties import NumericProperty, StringProperty, OptionProperty, ListProperty
+from kivy.uix.image import Image
+from kivy.uix.listview import ListItemLabel, CompositeListItem
+from kivy.uix.selectableview import SelectableView
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
+
+
+class ListItemImage(SelectableView, Image):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
 
 class Settings(EventDispatcher):
@@ -48,9 +56,13 @@ class Settings(EventDispatcher):
         if sys.platform.startswith('darwin'):
             locale.setlocale(locale.LC_ALL, 'de_DE.UTF-8')
         now = datetime.datetime.now()
-        self.current_day = self.WEEKDAY[now.weekday()]
+        self.current_day = self.WEEKDAY[0]  # now.weekday()]
         self.current_day_translated = now.strftime('%A')
+        print('Today is %s' % self.current_day_translated)
 
+        self.content_to_insert = []
+        self.content_to_remove = []
+        self.__initialize_comparison_lists()
         self.__load()
         self.__setup_changes_observer()
 
@@ -112,6 +124,8 @@ class Settings(EventDispatcher):
                 and self.tags[tag][self.current_day] == "1"]
             self.current_content = settings['currentContent']
 
+        self.update_comparison_lists(None, None)
+
     def __read_in_new_tags_file(self):
         """
         Opens the new tags file and copies its list into the internal list of
@@ -160,6 +174,42 @@ class Settings(EventDispatcher):
         self.observer.schedule(
             self.settings_handler, path=self.__root_directory, recursive=False)
         self.observer.start()
+
+    def __initialize_comparison_lists(self):
+        self.__data_converter = lambda row, item: {
+            'orientation': 'horizontal',
+            'cls_dicts': [
+                {'cls': ListItemImage, 'kwargs': {'source': item['image']}},
+                {'cls': ListItemLabel, 'kwargs': {'text': item['name']}}
+            ]
+        }
+
+        self.content_to_insert_adapter = ListAdapter(
+            data=self.content_to_insert,
+            args_converter=self.__data_converter,
+            cls=CompositeListItem)
+
+        self.content_to_remove_adapter = ListAdapter(
+            data=self.content_to_remove,
+            args_converter=self.__data_converter,
+            cls=CompositeListItem)
+
+    def update_comparison_lists(self, instance, value):
+        self.content_to_insert = set(self.target_content).difference(self.current_content)
+        self.content_to_insert_adapter.data = [
+            {'image': 'icons/default_image.png', 'name': 'Unbekanntes Material'} if tag not in self.tags else
+            {'image': 'icons/%s.png' % self.tags[tag]['imgName'], 'name': self.tags[tag]['materialName']}
+            for tag in self.content_to_insert]
+        self.content_to_insert_adapter.data.prop.dispatch(
+            self.content_to_insert_adapter.data.obj())
+
+        self.content_to_remove = set(self.current_content).difference(self.target_content)
+        self.content_to_remove_adapter.data = [
+            {'image': 'icons/default_image.png', 'name': 'Unbekanntes Material'} if tag not in self.tags else
+            {'image': 'icons/%s.png' % self.tags[tag]['imgName'], 'name': self.tags[tag]['materialName']}
+            for tag in self.content_to_remove]
+        self.content_to_remove_adapter.data.prop.dispatch(
+            self.content_to_remove_adapter.data.obj())
 
 
 class SettingsFileHandler(FileSystemEventHandler):
