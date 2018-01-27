@@ -15,6 +15,12 @@
 
 <Label>:
     font_size: sp(30)
+#    canvas.before:
+#        Color:
+#            rgba: 0, 0, 0, .1
+#        Rectangle:
+#            pos: self.pos
+#            size: self.size
 
 <TabbedPanel>:
     do_default_tab: False
@@ -23,12 +29,27 @@
     tab_width: self.height / 3
 
 <Button>:
-    background_color: 0.341, 0.839, 0.576, 1
+    background_color: 0.282, 0.702, 0.627, 1
     background_normal: ''
     color: 1, 1, 1, 1
 
 <ListView>:
     background_color: 0, 0, 0, .1
+
+<CompositeListItem>:
+    size_hint_y: None
+    height: pt(60)
+
+<ListItemImage>:
+    size_hint_x: None
+    width: pt(60)
+    canvas:
+        Color:
+            rgb: (1, 1, 1)
+        Rectangle:
+            texture: self.texture
+            size: self.height, self.height
+            pos: self.x, self.y
 
 <Management>:
     TabbedPanelItem:
@@ -37,25 +58,36 @@
         GridLayout:
             cols: 2
 
-#            Button:
-#                text: 'Start reading'
-#                size_hint_y: None
-#                height: pt(40)
-#                on_press: root.content_management.start()
-#            Button:
-#                text: 'Stop reading'
-#                size_hint_y: None
-#                height: pt(40)
-#                on_press: root.content_management.stop()
             Label:
-                text: 'Aktuelle Schulsachen'
+                color: 1, 1, 1, 1
+                canvas.before:
+                    Color:
+                        rgb: 0.282, 0.702, 0.627
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+                size_hint_y: None
+                height: self.parent.height * 0.15
+                text: 'Einpacken'
             Label:
-                text: 'Benötigte Schulsachen\n(%s)' % root.settings.current_day_translated
+                color: 1, 1, 1, 1
+                canvas.before:
+                    Color:
+                        rgb: 0.282, 0.702, 0.627
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+                size_hint_y: None
+                height: self.parent.height * 0.15
+                text: 'Auspacken'
             ListView:
-                item_strings: ['{0} ({1})'.format(root.settings.tags[tag]['materialName'], tag) for tag in root.settings.current_content]
-                # adapter: listadapter.ListAdapter(data=[{'name': root.settings.tags[tag]['name'], 'tag': tag} for tag in root.settings.current_content], args_converter=lambda row, item: { 'orientation': 'vertical', 'cls_dicts': [{'cls': ListItemLabel, 'kwargs': { 'text': item['name'] }}, {'cls': ListItemLabel, 'kwargs': { 'text': item['tag'] }}]}, cls=CompositeListItem)
+                size_hint_y: None
+                height: self.parent.height * 0.85
+                adapter: root.settings.content_to_insert_adapter
             ListView:
-                item_strings: ['{0} ({1})'.format(root.settings.tags[tag]['materialName'], tag) for tag in root.settings.target_content]
+                size_hint_y: None
+                height: self.parent.height * 0.85
+                adapter: root.settings.content_to_remove_adapter
 
     TabbedPanelItem:
         text: 'Trimmen'
@@ -110,3 +142,11 @@
                     text: 'Beleuchtungsmodus'
                 Label:
                     text: root.settings.lighting_mode
+
+            BoxLayout:
+                orientation: 'horizontal'
+
+                Label:
+                    text: 'Animationstyp'
+                Label:
+                    text: root.settings.animation_type

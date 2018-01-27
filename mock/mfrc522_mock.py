@@ -1,7 +1,8 @@
 class MFRC522:
     PICC_REQIDL = None
     PICC_AUTHENT1A = None
-    MI_OK = None
+    MI_OK = True
+    MI_NOT_OK = False
 
     def __init__(self, dev='/dev/spidev0.0', spd=1000000):
         pass
@@ -31,7 +32,7 @@ class MFRC522:
         return self.MI_OK, 0, 0
 
     def MFRC522_Request(self, reqMode):
-        return self.MI_OK, 0
+        return self.MI_NOT_OK, 0
 
     def MFRC522_Anticoll(self):
         return self.MI_OK, 0

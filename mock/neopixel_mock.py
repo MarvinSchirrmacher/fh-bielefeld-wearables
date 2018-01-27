@@ -16,6 +16,9 @@ class Adafruit_NeoPixel:
     def numPixels(self):
         return 30
 
+    def getPixelColor(self, pixel):
+        return Color(0, 0, 0)
+
     def setPixelColor(self, pixel, color):
         pass
 

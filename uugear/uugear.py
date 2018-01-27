@@ -28,7 +28,7 @@ from ctypes import CDLL, Structure, POINTER, byref, c_char, c_int, c_float, c_ch
 
 UUGEAR_ID_MAX_LENGTH = 1024
 
-uugearlib = CDLL('./libUUGear.so')
+uugearlib = CDLL('libUUGear.so')
 
 class UUGearDeviceProfile(Structure):
     _fields_ = [
