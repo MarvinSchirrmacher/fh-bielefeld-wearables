@@ -48,13 +48,17 @@
 #                height: pt(40)
 #                on_press: root.content_management.stop()
             Label:
+                #height: self.height * 0.2
                 text: 'Aktuelle Schulsachen'
             Label:
+                #height: self.height * 0.2
                 text: 'Benötigte Schulsachen\n(%s)' % root.settings.current_day_translated
             ListView:
-                item_strings: ['{0} ({1})'.format(root.settings.tags[tag]['materialName'], tag) for tag in root.settings.current_content]
+                #height: self.height * 0.8
+                item_strings: ['{0} ({1})'.format(root.settings.tags[tag]['materialName'] if tag in root.settings.tags else 'Unbekanntes Material', tag) for tag in root.settings.current_content]
                 # adapter: listadapter.ListAdapter(data=[{'name': root.settings.tags[tag]['name'], 'tag': tag} for tag in root.settings.current_content], args_converter=lambda row, item: { 'orientation': 'vertical', 'cls_dicts': [{'cls': ListItemLabel, 'kwargs': { 'text': item['name'] }}, {'cls': ListItemLabel, 'kwargs': { 'text': item['tag'] }}]}, cls=CompositeListItem)
             ListView:
+                #height: self.height * 0.8
                 item_strings: ['{0} ({1})'.format(root.settings.tags[tag]['materialName'], tag) for tag in root.settings.target_content]
 
     TabbedPanelItem:

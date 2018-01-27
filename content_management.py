@@ -1,9 +1,8 @@
 import sys
+import time
 from threading import Thread, Event
 
-import time
-from kivy.clock import Clock
-from kivy.properties import StringProperty, ListProperty, partial
+from kivy.properties import StringProperty, ListProperty
 
 from settings import Settings
 
@@ -144,7 +143,6 @@ class ContentManagement:
         if tag not in self.__settings.tags:
             print('[Content management] The tag "%s" is new and have to be registered via smartphone app' % tag)
             self.__settings.register_new_tag(tag)
-            return
 
         if tag in self.__settings.current_content:
             print('[Content management] Remove tag form current content')
