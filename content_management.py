@@ -151,6 +151,8 @@ class ContentManagement:
             print('[Content management] Append tag to current content')
             self.__settings.current_content.append(tag)
 
+        self.__settings.save()
+
 
 class ContentListItem(ListProperty):
     name = StringProperty()
