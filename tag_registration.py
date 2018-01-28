@@ -15,7 +15,7 @@ class TagRegistration:
         """
         Sets up the rfid reader.
         """
-        self.__rfid_reader = MFRC522()
+        self.__tag_reader = MFRC522()
         self.__authentication_key = [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]
         self.__authentication_key_length = 8
         self.__rfid_registration = {
@@ -73,18 +73,18 @@ class TagRegistration:
         detected.
         :return:
         """
-        status, tag_type = self.__rfid_reader.MFRC522_Request(
-            self.__rfid_reader.PICC_REQIDL)
+        status, tag_type = self.__tag_reader.MFRC522_Request(
+            self.__tag_reader.PICC_REQIDL)
         if not self.__read_succeeded(status):
             return
 
-        status, uid = self.__rfid_reader.MFRC522_Anticoll()
-        if not status == self.__rfid_reader.MI_OK:
-            print('[TagRegistration] RFID anticoll failed')
+        status, uid = self.__tag_reader.MFRC522_Anticoll()
+        if not status == self.__tag_reader.MI_OK:
+            print('[TagRegistration] Getting unique id of the tag failed')
             return
 
         if not self.__authenticate_read(uid):
-            print('[TagRegistration] RFID authentication failed')
+            print('[TagRegistration] Authentication of the tag failed')
             return
 
         if not self.__reached_acceptance_level(uid):
@@ -97,18 +97,19 @@ class TagRegistration:
         """
         Compensates unsuccessful reads as they cyclically occur although a tag
         remains in front of the reader.
-        :param status: The the read status.
+        :param status: The read status.
         :return: True if reading succeeded, else False.
         """
-        if status != self.__rfid_reader.MI_OK:
-            if self.__rfid_registration['errors'] < 1:
-                self.__rfid_registration['errors'] += 1
-            else:
-                self.__rfid_registration['counter'] = 0
-            return False
+        if status == self.__tag_reader.MI_OK:
+            self.__rfid_registration['errors'] = 0
+            return True
 
-        self.__rfid_registration['errors'] = 0
-        return True
+        if self.__rfid_registration['errors'] == 1:
+            self.__rfid_registration['uid'] = []
+            self.__rfid_registration['counter'] = 0
+        else:
+            self.__rfid_registration['errors'] += 1
+        return False
 
     def __authenticate_read(self, uid):
         """
@@ -116,17 +117,17 @@ class TagRegistration:
         :param uid: The rfid tag unique id.
         :return: True if authenticated, else False.
         """
-        self.__rfid_reader.MFRC522_SelectTag(uid)
-        status = self.__rfid_reader.MFRC522_Auth(
-            self.__rfid_reader.PICC_AUTHENT1A,
+        self.__tag_reader.MFRC522_SelectTag(uid)
+        status = self.__tag_reader.MFRC522_Auth(
+            self.__tag_reader.PICC_AUTHENT1A,
             self.__authentication_key_length,
             self.__authentication_key, uid)
 
-        if status != self.__rfid_reader.MI_OK:
+        if status != self.__tag_reader.MI_OK:
             return False
 
-        self.__rfid_reader.MFRC522_Read(self.__authentication_key_length)
-        self.__rfid_reader.MFRC522_StopCrypto1()
+        self.__tag_reader.MFRC522_Read(self.__authentication_key_length)
+        self.__tag_reader.MFRC522_StopCrypto1()
         return True
 
     RFID_REGISTRATION_ACCEPTANCE = 2
@@ -147,7 +148,7 @@ class TagRegistration:
             self.__rfid_registration['uid'] = uid
             self.__rfid_registration['counter'] = 1
 
-        if self.__rfid_registration['counter'] < self.RFID_REGISTRATION_ACCEPTANCE:
+        if not self.__rfid_registration['counter'] == self.RFID_REGISTRATION_ACCEPTANCE:
             return False
 
         self.__rfid_registration['counter'] = 0
