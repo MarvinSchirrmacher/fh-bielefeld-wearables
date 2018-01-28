@@ -19,6 +19,10 @@ class Management(TabbedPanel):
     def __init__(self):
         super().__init__()
 
+    def __del__(self):
+        self.content_management.__del__()
+        self.led_stripe_controller.__del__()
+
 
 class SchoolBagApp(App):
     """
@@ -27,7 +31,11 @@ class SchoolBagApp(App):
     """
 
     def build(self):
-        return Management()
+        self.__management = Management()
+        return self.__management
+
+    def on_stop(self):
+        self.__management.__del__()
 
 
 if __name__ == '__main__':
