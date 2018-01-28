@@ -55,11 +55,11 @@ class LedStripeController:
             'off': self.set_mode_off
         }
         self.__animation_methods = {
-            'constant': self.__constant,
-            'rainbow': self.__rainbow,
-            'cycle': self.__rainbow_cycle,
-            'wipe': self.__color_wipe,
-            'chase': self.__theater_chase
+            'constant': (self.__constant, None),
+            'rainbow': (self.__rainbow, None),
+            'cycle': (self.__rainbow_cycle, None),
+            'wipe': (self.__color_wipe, None),
+            'chase': (self.__theatre_chase_entry, self.__theatre_chase_exit)
         }
 
         self.__animation_thread = None
@@ -67,8 +67,10 @@ class LedStripeController:
         self.__animation_interval = animation_interval
         self.__pixel_iteration = 0
         self.__color_iteration = 0
-        self.__animation_toggle = 0
-        self.__animation_method = self.__animation_methods[self.__settings.animation_type]
+        self.__color_toggle = 0
+        self.__animation_entry = None
+        self.__animation_exit = None
+        self.set_animation(self.__settings, self.__settings.animation_type)
 
     def __del__(self):
         self.stop_animation()
@@ -119,7 +121,8 @@ class LedStripeController:
         """
         assert(instance == self.__settings)
 
-        self.__animation_method = self.__animation_methods[animation_type]
+        self.__animation_entry = self.__animation_methods[animation_type][0]
+        self.__animation_exit = self.__animation_methods[animation_type][1]
 
     def start_animation(self):
         """
@@ -149,25 +152,25 @@ class LedStripeController:
 
     def __animation_thread_method(self):
         """
-        The thread method which cyclically calls the animation update method.
+        The thread method which cyclically calls the animation methods.
         :return:
         """
         while True:
             if self.__stop_animation_thread.is_set():
                 self.set_mode_off()
                 return
-            self.__update_animation()
+
+            self.__increment_animation_iteration()
+
+            if self.__animation_entry():
+                self.__stripe.show()
             time.sleep(self.__animation_interval)
 
-    def __update_animation(self):
-        """
-        Increments the animation properties, updates the pixel configuration
-        and updates the LEDs.
-        :return:
-        """
-        self.__increment_animation_iteration()
-        if self.__animation_method():
-            self.__stripe.show()
+            if self.__animation_exit is None:
+                return
+
+            if self.__animation_exit():
+                self.__stripe.show()
 
     def __constant(self):
         """
@@ -195,8 +198,8 @@ class LedStripeController:
         :return:
         """
         for i in range(self.__stripe.numPixels()):
-            self.__stripe.setPixelColor(i, self.__wheel(
-                (self.__pixel_iteration + self.__color_iteration) & 255))
+            color = self.__wheel((i + self.__color_iteration) & RGB_MAX)
+            self.__stripe.setPixelColor(i, color)
         return True
 
     def __rainbow_cycle(self):
@@ -206,36 +209,32 @@ class LedStripeController:
         """
         for i in range(self.__stripe.numPixels()):
             self.__stripe.setPixelColor(i, self.__wheel(
-                (int(i * 256 / self.__stripe.numPixels()) + self.__color_iteration) & 255))
+                (int(i * 256 / self.__stripe.numPixels()) + self.__color_iteration) & RGB_MAX))
         return True
 
-    def __theater_chase(self):
+    def __theatre_chase_entry(self):
+        """
+        Movie theater light style chaser animation; turns on the lights method.
+        :return:
+        """
+        return self.__theater_chase(COLOR_WHITE)
+
+    def __theatre_chase_exit(self):
+        """
+        Movie theater light style chaser animation; exit method.
+        :return:
+        """
+        return self.__theater_chase(COLOR_BLACK)
+
+    def __theater_chase(self, color):
         """
         Movie theater light style chaser animation.
+        :param color: The color to set.
         :return:
         """
-        return False
-    #     for i in range(0, self.__stripe.numPixels(), 3):
-    #         self.__stripe.setPixelColor(i + self.__animation_toggle, COLOR_WHITE)
-    #     strip.show()
-    #     time.sleep(wait_ms / 1000.0)
-    #     for i in range(0, self.__stripe.numPixels(), 3):
-    #         self.__stripe.setPixelColor(i + self.__animation_toggle, COLOR_BLACK)
-
-    def __theater_chase_rainbow(self):
-        """
-        Rainbow movie theater light style chaser animation.
-        :return:
-        """
-        return False
-    #     for j in range(256):
-    #         for q in range(3):
-    #             for i in range(0, strip.numPixels(), 3):
-    #                 strip.setPixelColor(i + q, wheel((i + j) % 255))
-    #             strip.show()
-    #             time.sleep(wait_ms / 1000.0)
-    #             for i in range(0, strip.numPixels(), 3):
-    #                 strip.setPixelColor(i + q, 0)
+        for i in range(0, self.__stripe.numPixels(), 3):
+            self.__stripe.setPixelColor(i + self.__color_toggle, color)
+        return True
 
     def __increment_animation_iteration(self):
         """
@@ -251,9 +250,9 @@ class LedStripeController:
         if self.__pixel_iteration == self.__stripe.numPixels():
             self.__pixel_iteration = 0
 
-        self.__animation_toggle += 1
-        if self.__animation_toggle == 3:
-            self.__animation_toggle = 0
+        self.__color_toggle += 1
+        if self.__color_toggle == 3:
+            self.__color_toggle = 0
 
     @staticmethod
     def __wheel(pos):
@@ -262,11 +261,14 @@ class LedStripeController:
         :param pos: The current animation position.
         :return:
         """
-        if pos < 85:
-            return Color(pos * 3, RGB_MAX - pos * 3, 0)
-        elif pos < 170:
-            pos -= 85
-            return Color(RGB_MAX - pos * 3, 0, pos * 3)
+        sec = 3
+        lim = int(RGB_MAX / sec)
+
+        if pos < lim * 1:
+            return Color(pos * sec, RGB_MAX - pos * sec, 0)
+        elif pos < lim * 2:
+            pos -= lim
+            return Color(RGB_MAX - pos * sec, 0, pos * sec)
         else:
-            pos -= 170
-            return Color(0, pos * 3, RGB_MAX - pos * 3)
+            pos -= lim * 2
+            return Color(0, pos * sec, RGB_MAX - pos * sec)
