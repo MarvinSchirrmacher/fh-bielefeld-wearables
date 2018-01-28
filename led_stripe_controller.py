@@ -45,7 +45,9 @@ class LedStripeController:
         self.__stripe.begin()
 
         self.__settings = settings
-        self.__settings.bind(lighting_mode=self.set_mode, animation_type=self.set_animation)
+        self.__settings.bind(
+            lighting_mode=self.set_mode,
+            animation_type=self.set_animation)
 
         self.__mode_initializer = {
             'manual': self.set_mode_manual,
@@ -67,6 +69,9 @@ class LedStripeController:
         self.__color_iteration = 0
         self.__animation_toggle = 0
         self.__animation_method = self.__animation_methods[self.__settings.animation_type]
+
+    def __del__(self):
+        self.stop_animation()
 
     def set_mode(self, instance, mode):
         """
@@ -121,10 +126,9 @@ class LedStripeController:
         if self.__animation_thread is not None \
                 and not self.__animation_thread.is_alive:
             return
-        self.__animation_thread = Thread(target=self.__animation_thread_method)
+        self.__animation_thread = Thread(
+            target=self.__animation_thread_method, daemon=True)
         self.__animation_thread.start()
-        print('[LED stripe controller] Started animation thread %s' %
-              str(self.__animation_thread))
 
     def stop_animation(self):
         """
@@ -137,7 +141,7 @@ class LedStripeController:
             return
 
         self.__stop_animation_thread.set()
-        print('[LED stripe controller] Triggered stopped event for animation thread')
+        self.__animation_thread.join()
 
     def __animation_thread_method(self):
         """
@@ -146,7 +150,6 @@ class LedStripeController:
         """
         while True:
             if self.__stop_animation_thread.is_set():
-                print('Stop animation thread')
                 self.set_mode_off()
                 return
             self.__update_animation()

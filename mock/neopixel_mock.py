@@ -11,7 +11,7 @@ class Adafruit_NeoPixel:
         pass
 
     def begin(self):
-        print('Initiate LED stripe')
+        pass
 
     def numPixels(self):
         return 30
@@ -23,7 +23,7 @@ class Adafruit_NeoPixel:
         pass
 
     def show(self):
-        print('LEDs are shining')
+        print('[Adafruit NeoPixel] Show')
 
 class Color:
     def __init__(self, r, g, b):
