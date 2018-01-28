@@ -1,6 +1,4 @@
 import datetime
-import locale
-import sys
 
 from kivy.adapters.listadapter import ListAdapter
 from kivy.event import EventDispatcher
@@ -64,7 +62,7 @@ class ContentManagement(EventDispatcher):
         """
         now = datetime.datetime.now()
         self.current_day = self.WEEKDAY[0]  # now.weekday()]
-        print('[Content management] Today is %s' % now.strftime('%c'))
+        print('[ContentManagement] Today is %s' % now.strftime('%c'))
 
         return [
             tag for tag in self.__settings.tags
@@ -78,16 +76,12 @@ class ContentManagement(EventDispatcher):
         :param tag: The tag uid to look for.
         :return:
         """
-        print('[Content management] Update current configuration')
         if tag not in self.__settings.tags:
-            print('[Content management] The tag "%s" is new and have to be registered via smartphone app' % tag)
             self.__settings.register_new_tag(tag)
 
         if tag in self.__settings.current_content:
-            print('[Content management] Remove tag form current content')
             self.__settings.current_content.remove(tag)
         else:
-            print('[Content management] Append tag to current content')
             self.__settings.current_content.append(tag)
 
         self.__settings.save()

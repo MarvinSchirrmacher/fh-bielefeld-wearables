@@ -73,23 +73,23 @@ class TagRegistration:
         detected.
         :return:
         """
-        status, tag_type = self.__rfid_reader.MFRC522_Request(self.__rfid_reader.PICC_REQIDL)
+        status, tag_type = self.__rfid_reader.MFRC522_Request(
+            self.__rfid_reader.PICC_REQIDL)
         if not self.__read_succeeded(status):
             return
 
         status, uid = self.__rfid_reader.MFRC522_Anticoll()
         if not status == self.__rfid_reader.MI_OK:
-            print('[Content management] RFID anticoll failed')
+            print('[TagRegistration] RFID anticoll failed')
             return
 
         if not self.__authenticate_read(uid):
-            print('[Content management] RFID authentication failed')
+            print('[TagRegistration] RFID authentication failed')
             return
 
         if not self.__reached_acceptance_level(uid):
             return
 
-        print('[Content management] Accepted uid')
         uid_hex = [format(fragment, '02x') for fragment in uid]
         self.__update_tags_list('-'.join(uid_hex))
 

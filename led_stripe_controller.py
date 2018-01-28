@@ -81,6 +81,8 @@ class LedStripeController:
         :param mode: The new mode.
         :return:
         """
+        assert(instance == self.__settings)
+
         self.stop_animation()
         self.__mode_initializer[mode]()
 
@@ -115,6 +117,8 @@ class LedStripeController:
         :param animation_type: The name of the animation type to use.
         :return:
         """
+        assert(instance == self.__settings)
+
         self.__animation_method = self.__animation_methods[animation_type]
 
     def start_animation(self):
@@ -166,13 +170,20 @@ class LedStripeController:
             self.__stripe.show()
 
     def __constant(self):
+        """
+        Sets each pixel to white.
+        :return:
+        """
         if self.__stripe.getPixelColor(self.__pixel_iteration) == COLOR_WHITE_0_5:
             return False
         self.__stripe.setPixelColor(self.__pixel_iteration, COLOR_WHITE_0_5)
         return True
 
     def __color_wipe(self):
-        """Wipe color across display a pixel at a time."""
+        """
+        Wipe color across display a pixel at a time.
+        :return:
+        """
         prior_pixel = self.__pixel_iteration - 1 if self.__pixel_iteration > 0 else self.__stripe.numPixels() - 1
         self.__stripe.setPixelColor(prior_pixel, COLOR_BLACK)
         self.__stripe.setPixelColor(self.__pixel_iteration, COLOR_WHITE)
@@ -199,7 +210,10 @@ class LedStripeController:
         return True
 
     def __theater_chase(self):
-        """Movie theater light style chaser animation."""
+        """
+        Movie theater light style chaser animation.
+        :return:
+        """
         return False
     #     for i in range(0, self.__stripe.numPixels(), 3):
     #         self.__stripe.setPixelColor(i + self.__animation_toggle, COLOR_WHITE)
@@ -209,7 +223,10 @@ class LedStripeController:
     #         self.__stripe.setPixelColor(i + self.__animation_toggle, COLOR_BLACK)
 
     def __theater_chase_rainbow(self):
-        """Rainbow movie theater light style chaser animation."""
+        """
+        Rainbow movie theater light style chaser animation.
+        :return:
+        """
         return False
     #     for j in range(256):
     #         for q in range(3):
