@@ -61,7 +61,7 @@ class ContentManagement(EventDispatcher):
         :return: The target content tag list.
         """
         now = datetime.datetime.now()
-        self.current_day = self.WEEKDAY[0]  # now.weekday()]
+        self.current_day = self.WEEKDAY[now.weekday()]
         print('[ContentManagement] Today is %s' % now.strftime('%c'))
 
         return [

@@ -143,6 +143,8 @@ class TagRegistration:
         :return: True if the unique id reached the acceptance level, else False.
         """
         if uid == self.__rfid_registration['uid']:
+            if self.__rfid_registration['counter'] == 0:
+                return False
             self.__rfid_registration['counter'] += 1
         else:
             self.__rfid_registration['uid'] = uid
