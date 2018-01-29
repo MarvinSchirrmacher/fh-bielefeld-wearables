@@ -33,7 +33,7 @@ class LedStripeController:
         'frontRight': [18, 19, 20, 21]
     }
 
-    def __init__(self, settings, animation_interval: float = 1 / 50.):
+    def __init__(self, settings, animation_interval: float = 1 / 25.):
         """
         Initializes the led stripe and sets the modes and animations.
         :param settings: The settings which handles the lighting mode.
@@ -55,6 +55,7 @@ class LedStripeController:
             'off': self.set_mode_off
         }
         self.__animation_methods = {
+            'off': (self.__off, None),
             'constant': (self.__constant, None),
             'rainbow': (self.__rainbow, None),
             'cycle': (self.__rainbow_cycle, None),
@@ -62,8 +63,6 @@ class LedStripeController:
             'chase': (self.__theatre_chase_entry, self.__theatre_chase_exit)
         }
 
-        self.__animation_thread = None
-        self.__stop_animation_thread = Event()
         self.__animation_interval = animation_interval
         self.__pixel_iteration = 0
         self.__color_iteration = 0
@@ -71,9 +70,21 @@ class LedStripeController:
         self.__animation_entry = None
         self.__animation_exit = None
         self.set_animation(self.__settings, self.__settings.animation_type)
+        self.__last_animation_type = 'off'
+        self.set_mode(self.__settings, self.__settings.lighting_mode)
+        self.__stop_animation_thread = Event()
+        self.__animation_thread = Thread(
+            target=self.__animation_thread_method, daemon=True)
+        self.__animation_thread.start()
 
     def __del__(self):
-        self.stop_animation()
+        if self.__animation_thread is None:
+            return
+        if not self.__animation_thread.is_alive:
+            return
+
+        self.__stop_animation_thread.set()
+        self.__animation_thread.join()
 
     def set_mode(self, instance, mode):
         """
@@ -84,8 +95,6 @@ class LedStripeController:
         :return:
         """
         assert(instance == self.__settings)
-
-        self.stop_animation()
         self.__mode_initializer[mode]()
 
     def set_mode_off(self):
@@ -93,9 +102,8 @@ class LedStripeController:
         Switches off all LEDs.
         :return:
         """
-        for i in range(self.__stripe.numPixels()):
-            self.__stripe.setPixelColor(i, COLOR_BLACK)
-        self.__stripe.show()
+        self.__last_animation_type = self.__settings.animation_type
+        self.set_animation(self.__settings, 'off')
 
     def set_mode_manual(self):
         """
@@ -103,7 +111,7 @@ class LedStripeController:
         switching between on and off.
         :return:
         """
-        self.start_animation()
+        self.set_animation(self.__settings, self.__last_animation_type)
 
     def set_mode_automatic(self):
         """
@@ -120,35 +128,8 @@ class LedStripeController:
         :return:
         """
         assert(instance == self.__settings)
-
         self.__animation_entry = self.__animation_methods[animation_type][0]
         self.__animation_exit = self.__animation_methods[animation_type][1]
-
-    def start_animation(self):
-        """
-        Starts the animation thread which cyclically calls the method to update
-        the currently selected animation.
-        :return:
-        """
-        if self.__animation_thread is not None \
-                and not self.__animation_thread.is_alive:
-            return
-        self.__animation_thread = Thread(
-            target=self.__animation_thread_method, daemon=True)
-        self.__animation_thread.start()
-
-    def stop_animation(self):
-        """
-        Stops the animation thread if it is alive.
-        :return:
-        """
-        if self.__animation_thread is None:
-            return
-        if not self.__animation_thread.is_alive:
-            return
-
-        self.__stop_animation_thread.set()
-        self.__animation_thread.join()
 
     def __animation_thread_method(self):
         """
@@ -167,20 +148,35 @@ class LedStripeController:
             time.sleep(self.__animation_interval)
 
             if self.__animation_exit is None:
-                return
+                continue
 
             if self.__animation_exit():
                 self.__stripe.show()
+
+    def __set_all(self, color):
+        """
+        Set all pixels to <color>.
+        :param color: The color to set a pixel to.
+        :return:
+        """
+        if self.__stripe.getPixelColor(self.__pixel_iteration) == color:
+            return False
+        self.__stripe.setPixelColor(self.__pixel_iteration, color)
+        return True
+
+    def __off(self):
+        """
+        Sets each pixel to white.
+        :return:
+        """
+        return self.__set_all(COLOR_BLACK)
 
     def __constant(self):
         """
         Sets each pixel to white.
         :return:
         """
-        if self.__stripe.getPixelColor(self.__pixel_iteration) == COLOR_WHITE_0_5:
-            return False
-        self.__stripe.setPixelColor(self.__pixel_iteration, COLOR_WHITE_0_5)
-        return True
+        return self.__set_all(COLOR_WHITE_0_5)
 
     def __color_wipe(self):
         """
