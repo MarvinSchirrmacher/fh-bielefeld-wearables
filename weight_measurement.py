@@ -11,6 +11,7 @@ class WeightMeasurement:
     def __init__(self, on_schoolbag_put_on, on_schoolbag_put_down, settings, measurement_interval: float = 1 / 10.):
         self.__attach_arduino()
         if not self.__arduino.isValid():
+            print('[WeightMeasurement] Arduino initialization failed')
             return
 
         self.__measure_thread = None
@@ -40,10 +41,9 @@ class WeightMeasurement:
         self.__arduino.stopDeamon()
 
     def __measure(self):
-        sensor_left = self.__arduino.analogRead(2)
-        sensor_right = self.__arduino.analogRead(3)
-        print('%4d - %4d - %4d' % (sensor_left, sensor_right, (sensor_left+sensor_right)/2))
-        #print('Mean: ' + (self.__arduino.analogRead(2) + self.__arduino.analogRead(2))/2)
+        # sensor_left = self.__arduino.analogRead(2)
+        # sensor_right = self.__arduino.analogRead(3)
+        # print('%4d - %4d - %4d' % (sensor_left, sensor_right, (sensor_left+sensor_right)/2))
 
         if self.__arduino.analogRead(2) > 100 and self.__arduino.analogRead(3) > 100 and (
                 self.__is_put_on is None or self.__is_put_on is False):
@@ -55,7 +55,6 @@ class WeightMeasurement:
             self.__on_schoolbag_put_down()
             self.__is_put_on = False
             print('put down')
-
 
     def __measure_thread_method(self):
         while True:

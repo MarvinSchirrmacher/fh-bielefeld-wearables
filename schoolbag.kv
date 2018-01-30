@@ -49,8 +49,19 @@
         text: 'Packen'
 
         GridLayout:
-            cols: 2
+            cols: 3
 
+            Label:
+                color: 1, 1, 1, 1
+                canvas.before:
+                    Color:
+                        rgb: 0.282, 0.702, 0.627
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+                size_hint_y: None
+                height: self.parent.height * 0.15
+                text: 'Aktuell'
             Label:
                 color: 1, 1, 1, 1
                 canvas.before:
@@ -73,6 +84,10 @@
                 size_hint_y: None
                 height: self.parent.height * 0.15
                 text: 'Auspacken'
+            ListView:
+                size_hint_y: None
+                height: self.parent.height * 0.85
+                adapter: root.content_management.current_content_adapter
             ListView:
                 size_hint_y: None
                 height: self.parent.height * 0.85
