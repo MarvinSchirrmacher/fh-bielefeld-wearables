@@ -4,7 +4,7 @@ from kivy.uix.tabbedpanel import TabbedPanel
 from content_management import ContentManagement
 from led_stripe_controller import LedStripeController
 from settings import Settings
-from trimmer import Trimmer
+from weight_measurement import WeightMeasurement
 
 
 class Management(TabbedPanel):
@@ -14,10 +14,15 @@ class Management(TabbedPanel):
     settings = Settings()
     content_management = ContentManagement(settings)
     led_stripe_controller = LedStripeController(settings)
-    trimmer = Trimmer(settings, led_stripe_controller)
+    weight_measurement = WeightMeasurement()
 
     def __init__(self):
         super().__init__()
+
+    def __del__(self):
+        self.content_management.__del__()
+        self.led_stripe_controller.__del__()
+        self.weight_measurement.__del__()
 
 
 class SchoolBagApp(App):
@@ -27,11 +32,11 @@ class SchoolBagApp(App):
     """
 
     def build(self):
-        return Management()
+        self.__management = Management()
+        return self.__management
 
     def on_stop(self):
-        self.root.content_management.stop_rfid_reading()
-        self.root.led_stripe_controller.stop_animation()
+        self.__management.__del__()
 
 
 if __name__ == '__main__':

@@ -1,4 +1,3 @@
-#:import ContentListItem content_management.ContentListItem
 #:import listadapter kivy.adapters.listadapter
 #:import ListItemLabel kivy.uix.listview
 #:import CompositeListItem kivy.uix.listview
@@ -15,12 +14,6 @@
 
 <Label>:
     font_size: sp(30)
-#    canvas.before:
-#        Color:
-#            rgba: 0, 0, 0, .1
-#        Rectangle:
-#            pos: self.pos
-#            size: self.size
 
 <TabbedPanel>:
     do_default_tab: False
@@ -83,11 +76,11 @@
             ListView:
                 size_hint_y: None
                 height: self.parent.height * 0.85
-                adapter: root.settings.content_to_insert_adapter
+                adapter: root.content_management.content_to_insert_adapter
             ListView:
                 size_hint_y: None
                 height: self.parent.height * 0.85
-                adapter: root.settings.content_to_remove_adapter
+                adapter: root.content_management.content_to_remove_adapter
 
     TabbedPanelItem:
         text: 'Trimmen'

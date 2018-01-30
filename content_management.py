@@ -1,21 +1,16 @@
-import sys
-import time
-from threading import Thread, Event
+import datetime
 
-from kivy.properties import StringProperty, ListProperty
+from kivy.adapters.listadapter import ListAdapter
+from kivy.event import EventDispatcher
+from kivy.properties import ListProperty
+from kivy.uix.image import Image
+from kivy.uix.listview import CompositeListItem, ListItemLabel
+from kivy.uix.selectableview import SelectableView
 
-from settings import Settings
-
-if sys.platform.startswith('linux'):
-    from mfrc522.mfrc522 import MFRC522
-else:
-    from mock.mfrc522_mock import MFRC522
+from tag_registration import TagRegistration
 
 
-RFID_REGISTRATION_ACCEPTANCE = 2
-
-
-class ContentManagement:
+class ContentManagement(EventDispatcher):
     """
     Manages the school bag content.
 
@@ -24,113 +19,55 @@ class ContentManagement:
     for the current day.
     """
 
-    def __init__(self, settings: Settings):
+    WEEKDAY = {
+        0: 'monday',
+        1: 'tuesday',
+        2: 'wednesday',
+        3: 'thursday',
+        4: 'friday',
+        5: 'saturday',
+        6: 'sunday'
+    }
+    target_content = ListProperty()
+    content_to_insert = ListProperty()
+    content_to_remove = ListProperty()
+
+    def __init__(self, settings, *args, **kwargs):
         """
         Saves a reference to the settings and sets up the rfid reader.
         :param settings: The settings object to read from.
         """
+        super().__init__(*args, **kwargs)
         self.__settings = settings
-        self.__read_thread = None
-        self.__stop_read_thread = Event()
-        self.__authentication_key = [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]
-        self.__authentication_key_length = 8
-        self.__rfid_reader = MFRC522()
-        self.__rfid_registration = {
-            'uid': [],
-            'counter': 0,
-            'buffer': 0
-        }
-        self.start_rfid_reading()
+        self.__settings.bind(current_content=self.update_content_lists)
+        self.target_content = self.__determine_today_s_target_content()
 
-    def start_rfid_reading(self):
+        self.__tag_registration = TagRegistration(
+            self.__update_current_configuration)
+        self.__tag_registration.start_tag_reading()
+
+        self.__initialize_content_adapter()
+
+    def __del__(self):
         """
-        Starts the cyclically reading for any rfid tags.
+        Stops the tag reader.
         :return:
         """
-        if self.__read_thread is not None and not self.__read_thread.is_alive:
-            return
+        self.__tag_registration.stop_tag_reading()
 
-        self.__read_thread = Thread(target=self.__read_thread_method)
-        self.__read_thread.start()
-
-    def stop_rfid_reading(self):
+    def __determine_today_s_target_content(self):
         """
-        Stops the cyclically reading for any rfid tags.
-        :return:
+        Returns a list of tags which are needed for the current weekday.
+        :return: The target content tag list.
         """
-        if self.__read_thread is None:
-            return
-        if not self.__read_thread.is_alive:
-            return
+        now = datetime.datetime.now()
+        self.current_day = self.WEEKDAY[now.weekday()]
+        print('[ContentManagement] Today is %s' % now.strftime('%c'))
 
-        self.__stop_read_thread.set()
-
-    def __read_thread_method(self):
-        while True:
-            if self.__stop_read_thread.is_set():
-                return
-
-            self.__read()
-            time.sleep(0.25)
-
-    def __read(self):
-        """
-        Reads any tag and updates the current configuration if a tag was
-        detected.
-        :return:
-        """
-        status, tag_type = self.__rfid_reader.MFRC522_Request(self.__rfid_reader.PICC_REQIDL)
-        if status != self.__rfid_reader.MI_OK:
-            if self.__rfid_registration['buffer'] < 1:
-                self.__rfid_registration['buffer'] += 1
-            else:
-                self.__rfid_registration['counter'] = 0
-            return
-
-        self.__rfid_registration['buffer'] = 0
-
-        status, uid = self.__rfid_reader.MFRC522_Anticoll()
-        if not status == self.__rfid_reader.MI_OK:
-            print('[Content management] RFID anticoll failed')
-            return
-
-        if not self.__authenticate(uid):
-            print('[Content management] RFID authentication failed')
-            return
-
-        if uid == self.__rfid_registration['uid']:
-            self.__rfid_registration['counter'] += 1
-        else:
-            self.__rfid_registration['uid'] = uid
-            self.__rfid_registration['counter'] = 1
-
-        if self.__rfid_registration['counter'] < RFID_REGISTRATION_ACCEPTANCE:
-            return
-
-        self.__rfid_registration['counter'] = 0
-
-        print('[Content management] Accepted uid')
-        uid_hex = [format(fragment, '02x') for fragment in uid]
-        self.__update_current_configuration('-'.join(uid_hex))
-
-    def __authenticate(self, uid):
-        """
-        Authenticates the given rfid tag uid.
-        :param uid: The rfid tag uid.
-        :return: True if authenticated, else False.
-        """
-        self.__rfid_reader.MFRC522_SelectTag(uid)
-        status = self.__rfid_reader.MFRC522_Auth(
-            self.__rfid_reader.PICC_AUTHENT1A,
-            self.__authentication_key_length,
-            self.__authentication_key, uid)
-
-        if status != self.__rfid_reader.MI_OK:
-            return False
-
-        self.__rfid_reader.MFRC522_Read(self.__authentication_key_length)
-        self.__rfid_reader.MFRC522_StopCrypto1()
-        return True
+        return [
+            tag for tag in self.__settings.tags
+            if self.current_day in self.__settings.tags[tag]
+            and self.__settings.tags[tag][self.current_day] == "1"]
 
     def __update_current_configuration(self, tag):
         """
@@ -139,26 +76,80 @@ class ContentManagement:
         :param tag: The tag uid to look for.
         :return:
         """
-        print('[Content management] Update current configuration')
         if tag not in self.__settings.tags:
-            print('[Content management] The tag "%s" is new and have to be registered via smartphone app' % tag)
             self.__settings.register_new_tag(tag)
 
         if tag in self.__settings.current_content:
-            print('[Content management] Remove tag form current content')
             self.__settings.current_content.remove(tag)
         else:
-            print('[Content management] Append tag to current content')
             self.__settings.current_content.append(tag)
 
         self.__settings.save()
 
+    def __initialize_content_adapter(self):
+        """
+        Initializes the list view adapters for the insert and remove content
+        lists.
+        :return:
+        """
+        self.__data_converter = lambda row, item: {
+            'orientation': 'horizontal',
+            'cls_dicts': [
+                {'cls': ListItemImage, 'kwargs': {'source': item['image']}},
+                {'cls': ListItemLabel, 'kwargs': {'text': item['name']}}
+            ]
+        }
 
-class ContentListItem(ListProperty):
-    name = StringProperty()
-    tag = StringProperty()
+        self.content_to_insert_adapter = ListAdapter(
+            data=self.content_to_insert,
+            args_converter=self.__data_converter,
+            cls=CompositeListItem)
 
-    def __init__(self, name='unnamed', tag='0000 0000 0000'):
-        super().__init__()
-        self.name = StringProperty(name)
-        self.tag = StringProperty(tag)
+        self.content_to_remove_adapter = ListAdapter(
+            data=self.content_to_remove,
+            args_converter=self.__data_converter,
+            cls=CompositeListItem)
+
+        self.update_content_lists(self.__settings, self.__settings.current_content)
+
+    def update_content_lists(self, instance, current_content):
+        """
+        Compares the target content list with the current content list to fill
+        the insert and the remove content list.
+        :param instance: The
+        :param current_content:
+        :return:
+        """
+        assert(instance == self.__settings)
+
+        self.content_to_insert = set(self.target_content)\
+            .difference(current_content)
+        self.__update_tag_list_adapter(
+            self.content_to_insert_adapter,
+            self.content_to_insert)
+
+        self.content_to_remove = set(current_content)\
+            .difference(self.target_content)
+        self.__update_tag_list_adapter(
+            self.content_to_remove_adapter,
+            self.content_to_remove)
+
+    def __update_tag_list_adapter(self, adapter: ListAdapter, tags):
+        adapter.data = [
+            {
+                'image': 'icons/default_image.png',
+                'name': 'Unbekanntes Material'
+            }
+            if tag not in tags else
+            {
+                'image': 'icons/%s.png' % self.__settings.tags[tag]['imgName'],
+                'name': self.__settings.tags[tag]['materialName']
+            }
+            for tag in tags
+        ]
+        adapter.data.prop.dispatch(adapter.data.obj())
+
+
+class ListItemImage(SelectableView, Image):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
