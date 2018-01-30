@@ -33,6 +33,9 @@ class LedStripeController:
         'frontRight': [18, 19, 20, 21]
     }
 
+    PIXELS = LIGHTING_AREA['rearTop'] + LIGHTING_AREA['rearLeft'] + \
+             LIGHTING_AREA['rearBottom'] + LIGHTING_AREA['rearRight']
+
     def __init__(self, settings, animation_interval: float = 1 / 25.):
         """
         Initializes the led stripe and sets the modes and animations.
@@ -55,7 +58,6 @@ class LedStripeController:
             'off': self.set_mode_off
         }
         self.__animation_methods = {
-            'off': (self.__off, None),
             'constant': (self.__constant, None),
             'rainbow': (self.__rainbow, None),
             'cycle': (self.__rainbow_cycle, None),
@@ -79,6 +81,10 @@ class LedStripeController:
         self.__animation_thread.start()
 
     def __del__(self):
+        """
+        Stops the animation thread.
+        :return:
+        """
         if self.__animation_thread is None:
             return
         if not self.__animation_thread.is_alive:
@@ -89,14 +95,11 @@ class LedStripeController:
 
     def on_schoolbag_put_on(self):
         self.__is_put_on = True
-        if self.__settings.lighting_mode == 'automatic':
-            self.set_animation(self.__settings, self.__last_animation_type)
 
     def on_schoolbag_put_down(self):
         self.__is_put_on = False
         if self.__settings.lighting_mode == 'automatic':
-            self.__last_animation_type = self.__settings.animation_type
-            self.set_animation(self.__settings, 'off')
+            self.__turn_off_all_pixels()
 
     def set_mode(self, instance, mode):
         """
@@ -109,24 +112,19 @@ class LedStripeController:
         assert (instance == self.__settings)
         self.__mode_initializer[mode]()
 
-    def set_mode_automatic(self):
-        """
-        :return:
-        """
-        if self.__is_put_on is not None:
-            if self.__is_put_on is True:
-                self.set_animation(self.__settings, self.__last_animation_type)
-            else:
-                self.__last_animation_type = self.__settings.animation_type
-                self.set_animation(self.__settings, 'off')
-
     def set_mode_off(self):
         """
         Switches off all LEDs.
         :return:
         """
-        self.__last_animation_type = self.__settings.animation_type
-        self.set_animation(self.__settings, 'off')
+        self.__turn_off_all_pixels()
+
+    def set_mode_automatic(self):
+        """
+        :return:
+        """
+        if not self.__is_put_on:
+            self.__turn_off_all_pixels()
 
     def set_mode_manual(self):
         """
@@ -134,7 +132,7 @@ class LedStripeController:
         switching between on and off.
         :return:
         """
-        self.set_animation(self.__settings, self.__last_animation_type)
+        pass
 
     def set_animation(self, instance, animation_type):
         """
@@ -157,6 +155,13 @@ class LedStripeController:
                 self.set_mode_off()
                 return
 
+            if self.__settings.lighting_mode == 'off':
+                continue
+
+            if self.__settings.lighting_mode == 'automatic':
+                if not self.__is_put_on:
+                    continue
+
             self.__increment_animation_iteration()
 
             if self.__animation_entry():
@@ -169,7 +174,7 @@ class LedStripeController:
             if self.__animation_exit():
                 self.__stripe.show()
 
-    def __set_all(self, color):
+    def __set_pixel(self, color):
         """
         Set all pixels to <color>.
         :param color: The color to set a pixel to.
@@ -180,19 +185,33 @@ class LedStripeController:
         self.__stripe.setPixelColor(self.__pixel_iteration, color)
         return True
 
-    def __off(self):
+    def __turn_off_all_pixels(self):
         """
-        Sets each pixel to white.
+        Sets all pixels to color black and triggers a led stripe update.
         :return:
         """
-        return self.__set_all(COLOR_BLACK)
+        self.__set_and_show_all_pixels(COLOR_BLACK)
+
+    def __set_and_show_all_pixels(self, color):
+        """
+        Sets all pixels to <color>.
+        :param color: The to set the pixel to.
+        :return:
+        """
+        for i in range(self.__stripe.numPixels()):
+            self.__stripe.setPixelColor(i, color)
+
+        self.__stripe.show()
 
     def __constant(self):
         """
-        Sets each pixel to white.
+        Sets the current pixel to white.
         :return:
         """
-        return self.__set_all(COLOR_WHITE_0_5)
+        if self.__stripe.getPixelColor(self.__pixel_iteration) == COLOR_WHITE_0_5:
+            return False
+        self.__stripe.setPixelColor(self.__pixel_iteration, COLOR_WHITE_0_5)
+        return True
 
     def __color_wipe(self):
         """
