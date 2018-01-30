@@ -2,7 +2,7 @@ from threading import Event, Thread
 import RPi.GPIO as GPIO
 import time
 
-CONTROLPIN = 39;
+CONTROLPIN = 37;
 
 
 class ManualControl:
