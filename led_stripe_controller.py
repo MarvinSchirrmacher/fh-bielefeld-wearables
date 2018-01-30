@@ -128,6 +128,7 @@ class LedStripeController:
         self.__last_animation_type = self.__settings.animation_type
         self.set_animation(self.__settings, 'off')
 
+
     def set_mode_manual(self):
         """
         Schedules the configured lighting animation and enables the manual
