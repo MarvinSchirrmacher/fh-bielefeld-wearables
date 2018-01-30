@@ -8,7 +8,7 @@ ARDUINO_ID = 'UUGear-Arduino-4713-9982'
 
 
 class WeightMeasurement:
-    def __init__(self, measurement_interval: float = 1 / 50.):
+    def __init__(self, on_schoolbag_put_on, on_schoolbag_put_down, settings, measurement_interval: float = 1 / 10.):
         self.__attach_arduino()
         if not self.__arduino.isValid():
             return
@@ -17,6 +17,9 @@ class WeightMeasurement:
         self.__stop_measurement_thread = Event()
         self.__measurement_interval = measurement_interval
         self.__start_measure_thread()
+        self.__on_schoolbag_put_on = on_schoolbag_put_on
+        self.__on_schoolbag_put_down = on_schoolbag_put_down
+        self.__is_put_on = None
 
     def __del__(self):
         self.__stop_measurement()
@@ -28,14 +31,31 @@ class WeightMeasurement:
 
     def __detach_arduino(self):
         if not self.__arduino.isValid():
+            self.__arduino.detach()
+            self.__arduino.stopDeamon()
+            print('[weight_measurement] Device is valid: detach')
             return
-
+        print('[weight_measurement] Device is invalid: detach')
         self.__arduino.detach()
         self.__arduino.stopDeamon()
 
     def __measure(self):
-        print("Sensor1: %0.2f" % (float(self.__arduino.analogRead(2)) * 5 / 1024), "V")
-        print("Sensor2: %0.2f" % (float(self.__arduino.analogRead(3)) * 5 / 1024), "V")
+        sensor_left = self.__arduino.analogRead(2)
+        sensor_right = self.__arduino.analogRead(3)
+        print('%4d - %4d - %4d' % (sensor_left, sensor_right, (sensor_left+sensor_right)/2))
+        #print('Mean: ' + (self.__arduino.analogRead(2) + self.__arduino.analogRead(2))/2)
+
+        if self.__arduino.analogRead(2) > 100 and self.__arduino.analogRead(3) > 100 and (
+                self.__is_put_on is None or self.__is_put_on is False):
+            self.__on_schoolbag_put_on()
+            self.__is_put_on = True
+            print('put on')
+        elif self.__arduino.analogRead(2) <= 100 and self.__arduino.analogRead(3) <= 100 and (
+                self.__is_put_on is None or self.__is_put_on is True):
+            self.__on_schoolbag_put_down()
+            self.__is_put_on = False
+            print('put down')
+
 
     def __measure_thread_method(self):
         while True:

@@ -14,7 +14,8 @@ class Management(TabbedPanel):
     settings = Settings()
     content_management = ContentManagement(settings)
     led_stripe_controller = LedStripeController(settings)
-    weight_measurement = WeightMeasurement()
+    weight_measurement = WeightMeasurement(led_stripe_controller.on_schoolbag_put_on,
+                                           led_stripe_controller.on_schoolbag_put_down, settings)
 
     def __init__(self):
         super().__init__()
@@ -36,6 +37,7 @@ class SchoolBagApp(App):
         return self.__management
 
     def on_stop(self):
+        print('[SchoolBagApp] on_stop')
         self.__management.__del__()
 
 

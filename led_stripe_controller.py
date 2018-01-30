@@ -69,6 +69,7 @@ class LedStripeController:
         self.__color_toggle = 0
         self.__animation_entry = None
         self.__animation_exit = None
+        self.__is_put_on = None
         self.set_animation(self.__settings, self.__settings.animation_type)
         self.__last_animation_type = 'off'
         self.set_mode(self.__settings, self.__settings.lighting_mode)
@@ -86,6 +87,17 @@ class LedStripeController:
         self.__stop_animation_thread.set()
         self.__animation_thread.join()
 
+    def on_schoolbag_put_on(self):
+        self.__is_put_on = True
+        if self.__settings.lighting_mode == 'automatic':
+            self.set_animation(self.__settings, self.__last_animation_type)
+
+    def on_schoolbag_put_down(self):
+        self.__is_put_on = False
+        if self.__settings.lighting_mode == 'automatic':
+            self.__last_animation_type = self.__settings.animation_type
+            self.set_animation(self.__settings, 'off')
+
     def set_mode(self, instance, mode):
         """
         Sets the lighting mode and starts any action if needed.
@@ -94,8 +106,19 @@ class LedStripeController:
         :param mode: The new mode.
         :return:
         """
-        assert(instance == self.__settings)
+        assert (instance == self.__settings)
         self.__mode_initializer[mode]()
+
+    def set_mode_automatic(self):
+        """
+        :return:
+        """
+        if self.__is_put_on is not None:
+            if self.__is_put_on is True:
+                self.set_animation(self.__settings, self.__last_animation_type)
+            else:
+                self.__last_animation_type = self.__settings.animation_type
+                self.set_animation(self.__settings, 'off')
 
     def set_mode_off(self):
         """
@@ -113,13 +136,6 @@ class LedStripeController:
         """
         self.set_animation(self.__settings, self.__last_animation_type)
 
-    def set_mode_automatic(self):
-        """
-        Calls method set_mode_manual until now.
-        :return:
-        """
-        self.set_mode_off()
-
     def set_animation(self, instance, animation_type):
         """
         Sets the animation method corresponding to the animation type.
@@ -127,7 +143,7 @@ class LedStripeController:
         :param animation_type: The name of the animation type to use.
         :return:
         """
-        assert(instance == self.__settings)
+        assert (instance == self.__settings)
         self.__animation_entry = self.__animation_methods[animation_type][0]
         self.__animation_exit = self.__animation_methods[animation_type][1]
 
