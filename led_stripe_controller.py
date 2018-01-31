@@ -22,23 +22,36 @@ LED_INVERT = False  # True to invert the signal (when using NPN transistor level
 LED_CHANNEL = 0  # set to '1' for GPIOs 13, 19, 41, 45 or 53
 LED_STRIP = ws.WS2811_STRIP_GRB  # Strip type and colour ordering
 
+MODE_OFF = 'off'
+MODE_MANUAL = 'manual'
+MODE_AUTOMATIC = 'automatic'
+
+ANIMATION_TYPE_CONSTANT = 'constant'
+ANIMATION_TYPE_RAINBOW = 'rainbow'
+ANIMATION_TYPE_CYCLE = 'cycle'
+ANIMATION_TYPE_WIPE = 'wipe'
+ANIMATION_TYPE_CHASE = 'chase'
+ANIMATION_TYPES = [
+    ANIMATION_TYPE_CONSTANT,
+    ANIMATION_TYPE_RAINBOW,
+    ANIMATION_TYPE_CYCLE,
+    ANIMATION_TYPE_WIPE,
+    ANIMATION_TYPE_CHASE
+]
+
+LIGHTING_AREA = {
+    'rearTop': [22, 23, 24, 25, 26, 27, 28, 29],
+    'rearBottom': [4, 5, 6, 7, 8, 9],
+    'rearLeft': [10, 11, 12, 13],
+    'rearRight': [0, 1, 2, 3],
+    'frontLeft': [14, 15, 16, 17],
+    'frontRight': [18, 19, 20, 21]
+}
+
+PIXELS = LIGHTING_AREA['rearTop'] + LIGHTING_AREA['rearLeft'] + \
+         LIGHTING_AREA['rearBottom'] + LIGHTING_AREA['rearRight']
 
 class LedStripeController:
-    LIGHTING_AREA = {
-        'rearTop': [22, 23, 24, 25, 26, 27, 28, 29],
-        'rearBottom': [4, 5, 6, 7, 8, 9],
-        'rearLeft': [10, 11, 12, 13],
-        'rearRight': [0, 1, 2, 3],
-        'frontLeft': [14, 15, 16, 17],
-        'frontRight': [18, 19, 20, 21]
-    }
-
-    PIXELS = LIGHTING_AREA['rearTop'] + LIGHTING_AREA['rearLeft'] + \
-             LIGHTING_AREA['rearBottom'] + LIGHTING_AREA['rearRight']
-
-    MODE_OFF = 'off'
-    MODE_MANUAL = 'manual'
-    MODE_AUTOMATIC = 'automatic'
 
     def __init__(self, settings, animation_interval: float = 1 / 25.):
         """
@@ -57,29 +70,32 @@ class LedStripeController:
             animation_type=self.set_animation)
 
         self.__mode_initializer = {
-            'manual': self.set_mode_manual,
-            'automatic': self.set_mode_automatic,
-            'off': self.set_mode_off
+            MODE_OFF: self.set_mode_off,
+            MODE_MANUAL: self.set_mode_manual,
+            MODE_AUTOMATIC: self.set_mode_automatic
         }
         self.__animation_methods = {
-            'constant': (self.__constant, None),
-            'rainbow': (self.__rainbow, None),
-            'cycle': (self.__rainbow_cycle, None),
-            'wipe': (self.__color_wipe, None),
-            'chase': (self.__theatre_chase_entry, self.__theatre_chase_exit)
+            ANIMATION_TYPE_CONSTANT: (self.__constant, None),
+            ANIMATION_TYPE_RAINBOW: (self.__rainbow, None),
+            ANIMATION_TYPE_CYCLE: (self.__rainbow_cycle, None),
+            ANIMATION_TYPE_WIPE: (self.__color_wipe, None),
+            ANIMATION_TYPE_CHASE: (self.__theatre_chase_entry, self.__theatre_chase_exit)
         }
 
         self.__animation_interval = animation_interval
         self.__pixel_iteration = 0
         self.__color_iteration = 0
         self.__color_toggle = 0
+
         self.__animation_entry = None
         self.__animation_exit = None
+
         self.__is_put_on = False
         self.__turn_on = False
+
         self.set_animation(self.__settings, self.__settings.animation_type)
-        self.__last_animation_type = 'off'
         self.set_mode(self.__settings, self.__settings.lighting_mode)
+
         self.__stop_animation_thread = Event()
         self.__animation_thread = Thread(
             target=self.__animation_thread_method, daemon=True)
@@ -99,20 +115,39 @@ class LedStripeController:
         self.__animation_thread.join()
 
     def on_schoolbag_put_on(self):
+        """
+        Remembers that the bag is now put on what will retrigger the animation.
+        :return:
+        """
         self.__is_put_on = True
 
     def on_schoolbag_put_down(self):
+        """
+        Switches off the lights if the automatic lighting mode is on.
+        :return:
+        """
         self.__is_put_on = False
-        if self.__settings.lighting_mode == 'automatic':
+        if self.__settings.lighting_mode == MODE_AUTOMATIC:
             self.__turn_off_all_pixels()
 
-    def on_toggle_button(self):
+    def on_toggle_lighting_state(self):
+        """
+        Toggles the lighting between on and off when the manual ligthing mode
+        is on.
+        :return:
+        """
         self.__turn_on = not self.__turn_on
-        if self.__settings.lighting_mode == 'manual' and not self.__turn_on:
+        if self.__settings.lighting_mode == MODE_MANUAL and not self.__turn_on:
             self.__turn_off_all_pixels()
 
-    def on_next_animation(self):
-        pass
+    def on_set_next_animation(self):
+        """
+        Sets the animation to the next animation type.
+        :return:
+        """
+        index = ANIMATION_TYPES.index(self.__settings.animation_type)
+        index = index + 1 if index < len(ANIMATION_TYPES) - 1 else 0
+        self.__settings.animation_type = ANIMATION_TYPES[index]
 
     def set_mode(self, instance, mode):
         """
@@ -139,14 +174,14 @@ class LedStripeController:
         if not self.__is_put_on:
             self.__turn_off_all_pixels()
 
-
     def set_mode_manual(self):
         """
         Schedules the configured lighting animation and enables the manual
         switching between on and off.
         :return:
         """
-        pass
+        if not self.__turn_on:
+            self.__turn_off_all_pixels()
 
     def set_animation(self, instance, animation_type):
         """
@@ -169,12 +204,14 @@ class LedStripeController:
                 self.set_mode_off()
                 return
 
-            if self.__settings.lighting_mode == 'off':
+            if self.__settings.lighting_mode == MODE_OFF:
                 continue
 
-            if self.__settings.lighting_mode == 'automatic':
-                if not self.__is_put_on:
-                    continue
+            if self.__settings.lighting_mode == MODE_MANUAL and not self.__turn_on:
+                continue
+
+            if self.__settings.lighting_mode == MODE_AUTOMATIC and not self.__is_put_on:
+                continue
 
             self.__increment_animation_iteration()
 
@@ -224,7 +261,9 @@ class LedStripeController:
         """
         if self.__stripe.getPixelColor(self.__pixel_iteration) == COLOR_WHITE_0_5:
             return False
-        self.__stripe.setPixelColor(self.__pixel_iteration, COLOR_WHITE_0_5)
+
+        for i in range(self.__stripe.numPixels()):
+            self.__stripe.setPixelColor(self.__pixel_iteration, COLOR_WHITE_0_5)
         return True
 
     def __color_wipe(self):

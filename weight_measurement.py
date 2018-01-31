@@ -21,10 +21,10 @@ class WeightMeasurement:
         self.__measure_thread = None
         self.__stop_measurement_thread = Event()
         self.__measurement_interval = measurement_interval
-        self.__start_measure_thread()
         self.__on_schoolbag_put_on = on_schoolbag_put_on
         self.__on_schoolbag_put_down = on_schoolbag_put_down
         self.__is_put_on = False
+        self.__start_measure_thread()
 
     def __del__(self):
         self.__stop_measurement()

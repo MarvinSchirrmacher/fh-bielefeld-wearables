@@ -2,40 +2,50 @@ from threading import Event, Thread
 import RPi.GPIO as GPIO
 import time
 
-CONTROLPIN = 37;
+CONTROL_PIN = 37;
+BUTTON_PRESSED = 0
+BUTTON_LONG_PRESSED = 6
 
 
 class ManualControl:
-    def __init__(self, turn_lights_on, turn_lights_off, change_lighting_mode,
+    def __init__(self, toggle_lighting_state, set_next_animation_type,
                  read_control_button_interval: float = 1 / 10.):
         GPIO.setmode(GPIO.BOARD)
-        GPIO.setup(CONTROLPIN, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+        GPIO.setup(CONTROL_PIN, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
-        self.__turn_lights_on = turn_lights_on
-        self.__turn_lights_off = turn_lights_off
-        self.__change_lighting_mode = change_lighting_mode
+        self.__toggle_lighting_state = toggle_lighting_state
+        self.__set_next_animation_type = set_next_animation_type
 
         self.__manual_control_thread = None
         self.__stop_manual_control_thread = Event()
         self.__read_control_button_interval = read_control_button_interval
-        self.__start_manual_control_thread()
+        self.__was_pressed = False
         self.__press_count = 0
+        self.__start_manual_control_thread()
 
     def __del__(self):
         self.__stop_control_thread()
 
     def __read_control_button(self):
-        if GPIO.input(CONTROLPIN) == 0:
+        is_now_pressed = BUTTON_PRESSED == GPIO.input(CONTROL_PIN)
+        released = self.__was_pressed and not is_now_pressed
+
+        if is_now_pressed:
             self.__press_count += 1
-        elif GPIO.input(CONTROLPIN) == 1:
-            self.__read_control_button_interval(self.__press_count)
+            if self.__press_count == BUTTON_LONG_PRESSED:
+                self.__on_button_was_pressed(True)
+        elif released:
+            if self.__press_count < BUTTON_LONG_PRESSED:
+                self.__on_button_was_pressed(False)
             self.__press_count = 0
 
-    def __react_to_button_released(self, intervals_pressed):
-        if intervals_pressed > 3:
-            self.__change_animation_mode()
-        else:
+        self.__was_pressed = is_now_pressed
+
+    def __on_button_was_pressed(self, was_long_pressed):
+        if was_long_pressed:
             self.__toggle_lighting_state()
+        else:
+            self.__set_next_animation_type()
 
     def __manual_control_thread_method(self):
         while True:

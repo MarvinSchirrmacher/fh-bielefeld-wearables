@@ -19,7 +19,9 @@ class Management(TabbedPanel):
         settings,
         led_stripe_controller.on_schoolbag_put_on,
         led_stripe_controller.on_schoolbag_put_down)
-    manual_control = ManualControl(None, None, None)
+    manual_control = ManualControl(
+        led_stripe_controller.on_toggle_lighting_state,
+        led_stripe_controller.on_set_next_animation)
 
     def __init__(self):
         super().__init__()
