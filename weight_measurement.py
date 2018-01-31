@@ -8,19 +8,23 @@ ARDUINO_ID = 'UUGear-Arduino-4713-9982'
 
 
 class WeightMeasurement:
-    def __init__(self, on_schoolbag_put_on, on_schoolbag_put_down, settings, measurement_interval: float = 1 / 10.):
+    LEFT_SENSOR = 2
+    RIGHT_SENSOR = 3
+
+    def __init__(self, settings, on_schoolbag_put_on, on_schoolbag_put_down, measurement_interval: float = 1 / 10.):
         self.__attach_arduino()
         if not self.__arduino.isValid():
             print('[WeightMeasurement] Arduino initialization failed')
             return
 
+        self.__settings = settings
         self.__measure_thread = None
         self.__stop_measurement_thread = Event()
         self.__measurement_interval = measurement_interval
         self.__start_measure_thread()
         self.__on_schoolbag_put_on = on_schoolbag_put_on
         self.__on_schoolbag_put_down = on_schoolbag_put_down
-        self.__is_put_on = None
+        self.__is_put_on = False
 
     def __del__(self):
         self.__stop_measurement()
@@ -32,34 +36,26 @@ class WeightMeasurement:
 
     def __detach_arduino(self):
         if not self.__arduino.isValid():
-            self.__arduino.detach()
-            self.__arduino.stopDeamon()
-            print('[weight_measurement] Device is valid: detach')
             return
-        print('[weight_measurement] Device is invalid: detach')
+
         self.__arduino.detach()
         self.__arduino.stopDeamon()
 
     def __measure(self):
-        # sensor_left = self.__arduino.analogRead(2)
-        # sensor_right = self.__arduino.analogRead(3)
-        # print('%4d - %4d - %4d' % (sensor_left, sensor_right, (sensor_left+sensor_right)/2))
+        self.__measure_sensor_values()
 
-        if self.__arduino.analogRead(2) > 100 and self.__arduino.analogRead(3) > 100 and (
-                self.__is_put_on is None or self.__is_put_on is False):
+        if self.__compare_sensor_values(lambda v: v > 100) and not self.__is_put_on:
             self.__on_schoolbag_put_on()
             self.__is_put_on = True
-            print('put on')
-        elif self.__arduino.analogRead(2) <= 100 and self.__arduino.analogRead(3) <= 100 and (
-                self.__is_put_on is None or self.__is_put_on is True):
+        elif self.__compare_sensor_values(lambda v: v <= 100) and self.__is_put_on:
             self.__on_schoolbag_put_down()
             self.__is_put_on = False
-            print('put down')
 
     def __measure_thread_method(self):
         while True:
             if self.__stop_measurement_thread.is_set():
                 return
+
             self.__measure()
             time.sleep(self.__measurement_interval)
 
@@ -69,6 +65,7 @@ class WeightMeasurement:
             return
         if self.__arduino is None or not self.__arduino.isValid():
             return
+
         self.__measure_thread = Thread(
             target=self.__measure_thread_method, daemon=True)
         self.__measure_thread.start()
@@ -81,3 +78,10 @@ class WeightMeasurement:
 
         self.__stop_measurement_thread.set()
         self.__measure_thread.join()
+
+    def __measure_sensor_values(self):
+        self.__left_value = self.__arduino.analogRead(self.LEFT_SENSOR)
+        self.__right_value = self.__arduino.analogRead(self.RIGHT_SENSOR)
+
+    def __compare_sensor_values(self, compare):
+        return compare(self.__left_value) and compare(self.__right_value)

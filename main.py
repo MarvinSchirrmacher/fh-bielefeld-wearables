@@ -15,8 +15,10 @@ class Management(TabbedPanel):
     settings = Settings()
     content_management = ContentManagement(settings)
     led_stripe_controller = LedStripeController(settings)
-    weight_measurement = WeightMeasurement(led_stripe_controller.on_schoolbag_put_on,
-                                           led_stripe_controller.on_schoolbag_put_down, settings)
+    weight_measurement = WeightMeasurement(
+        settings,
+        led_stripe_controller.on_schoolbag_put_on,
+        led_stripe_controller.on_schoolbag_put_down)
     manual_control = ManualControl(None, None, None)
 
     def __init__(self):

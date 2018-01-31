@@ -6,16 +6,18 @@ CONTROLPIN = 37;
 
 
 class ManualControl:
-
-    def __init__(self, toggle_lighting_state, change_animation_type,
+    def __init__(self, turn_lights_on, turn_lights_off, change_lighting_mode,
                  read_control_button_interval: float = 1 / 10.):
-        self.__manual_control_thread = None
         GPIO.setmode(GPIO.BOARD)
         GPIO.setup(CONTROLPIN, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+
+        self.__turn_lights_on = turn_lights_on
+        self.__turn_lights_off = turn_lights_off
+        self.__change_lighting_mode = change_lighting_mode
+
+        self.__manual_control_thread = None
         self.__stop_manual_control_thread = Event()
         self.__read_control_button_interval = read_control_button_interval
-        self.__toggle_lighting_state = toggle_lighting_state
-        self.__change_animation_type = change_animation_type
         self.__start_manual_control_thread()
         self.__press_count = 0
 

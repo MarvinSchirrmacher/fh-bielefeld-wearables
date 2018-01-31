@@ -36,6 +36,10 @@ class LedStripeController:
     PIXELS = LIGHTING_AREA['rearTop'] + LIGHTING_AREA['rearLeft'] + \
              LIGHTING_AREA['rearBottom'] + LIGHTING_AREA['rearRight']
 
+    MODE_OFF = 'off'
+    MODE_MANUAL = 'manual'
+    MODE_AUTOMATIC = 'automatic'
+
     def __init__(self, settings, animation_interval: float = 1 / 25.):
         """
         Initializes the led stripe and sets the modes and animations.
@@ -71,7 +75,8 @@ class LedStripeController:
         self.__color_toggle = 0
         self.__animation_entry = None
         self.__animation_exit = None
-        self.__is_put_on = None
+        self.__is_put_on = False
+        self.__turn_on = False
         self.set_animation(self.__settings, self.__settings.animation_type)
         self.__last_animation_type = 'off'
         self.set_mode(self.__settings, self.__settings.lighting_mode)
@@ -100,6 +105,14 @@ class LedStripeController:
         self.__is_put_on = False
         if self.__settings.lighting_mode == 'automatic':
             self.__turn_off_all_pixels()
+
+    def on_toggle_button(self):
+        self.__turn_on = not self.__turn_on
+        if self.__settings.lighting_mode == 'manual' and not self.__turn_on:
+            self.__turn_off_all_pixels()
+
+    def on_next_animation(self):
+        pass
 
     def set_mode(self, instance, mode):
         """
