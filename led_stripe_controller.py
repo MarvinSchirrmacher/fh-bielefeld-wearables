@@ -12,6 +12,7 @@ BRIGHTNESS_MAX = 255
 COLOR_WHITE = Color(RGB_MAX, RGB_MAX, RGB_MAX)
 COLOR_WHITE_0_5 = Color(127, 127, 127)
 COLOR_BLACK = Color(0, 0, 0)
+COLOR_RED = Color(RGB_MAX, 0, 0)
 
 LED_COUNT = 30  # Number of LED pixels.
 LED_PIN = 18  # GPIO pin connected to the pixels (18 uses PWM!).
@@ -31,12 +32,15 @@ ANIMATION_TYPE_RAINBOW = 'rainbow'
 ANIMATION_TYPE_CYCLE = 'cycle'
 ANIMATION_TYPE_WIPE = 'wipe'
 ANIMATION_TYPE_CHASE = 'chase'
+ANIMATION_TYPE_ALERT = 'alert'
+
 ANIMATION_TYPES = [
     ANIMATION_TYPE_CONSTANT,
     ANIMATION_TYPE_RAINBOW,
     ANIMATION_TYPE_CYCLE,
     ANIMATION_TYPE_WIPE,
-    ANIMATION_TYPE_CHASE
+    ANIMATION_TYPE_CHASE,
+    ANIMATION_TYPE_ALERT
 ]
 
 LIGHTING_AREA = {
@@ -78,8 +82,9 @@ class LedStripeController:
             ANIMATION_TYPE_CONSTANT: (self.__constant, None),
             ANIMATION_TYPE_RAINBOW: (self.__rainbow, None),
             ANIMATION_TYPE_CYCLE: (self.__rainbow_cycle, None),
-            ANIMATION_TYPE_WIPE: (self.__color_wipe, None),
-            ANIMATION_TYPE_CHASE: (self.__theatre_chase_entry, self.__theatre_chase_exit)
+            ANIMATION_TYPE_WIPE: (self.__wipe, None),
+            ANIMATION_TYPE_CHASE: (self.__theatre_chase_entry, self.__theatre_chase_exit),
+            ANIMATION_TYPE_ALERT: (self.__alert, None)
         }
 
         self.__animation_interval = animation_interval
@@ -257,19 +262,19 @@ class LedStripeController:
     def __constant(self):
         """
         Sets the current pixel to white.
-        :return:
+        :return: True if the pixels have to be updated, else False.
         """
         if self.__stripe.getPixelColor(self.__pixel_iteration) == COLOR_WHITE_0_5:
             return False
 
         for i in range(self.__stripe.numPixels()):
-            self.__stripe.setPixelColor(self.__pixel_iteration, COLOR_WHITE_0_5)
+            self.__stripe.setPixelColor(i, COLOR_WHITE_0_5)
         return True
 
-    def __color_wipe(self):
+    def __wipe(self):
         """
         Wipe color across display a pixel at a time.
-        :return:
+        :return: True if the pixels have to be updated, else False.
         """
         prior_pixel = self.__pixel_iteration - 1 if self.__pixel_iteration > 0 else self.__stripe.numPixels() - 1
         self.__stripe.setPixelColor(prior_pixel, COLOR_BLACK)
@@ -279,7 +284,7 @@ class LedStripeController:
     def __rainbow(self):
         """
         Draw rainbow that fades across all pixels at once.
-        :return:
+        :return: True if the pixels have to be updated, else False.
         """
         for i in range(self.__stripe.numPixels()):
             color = self.__wheel((i + self.__color_iteration) & RGB_MAX)
@@ -289,7 +294,7 @@ class LedStripeController:
     def __rainbow_cycle(self):
         """
         Draw rainbow that uniformly distributes itself across all pixels.
-        :return:
+        :return: True if the pixels have to be updated, else False.
         """
         for i in range(self.__stripe.numPixels()):
             self.__stripe.setPixelColor(i, self.__wheel(
@@ -299,14 +304,14 @@ class LedStripeController:
     def __theatre_chase_entry(self):
         """
         Movie theater light style chaser animation; turns on the lights method.
-        :return:
+        :return: True if the pixels have to be updated, else False.
         """
         return self.__theater_chase(COLOR_WHITE)
 
     def __theatre_chase_exit(self):
         """
         Movie theater light style chaser animation; exit method.
-        :return:
+        :return: True if the pixels have to be updated, else False.
         """
         return self.__theater_chase(COLOR_BLACK)
 
@@ -314,10 +319,25 @@ class LedStripeController:
         """
         Movie theater light style chaser animation.
         :param color: The color to set.
-        :return:
+        :return: True if the pixels have to be updated, else False.
         """
         for i in range(0, self.__stripe.numPixels(), 3):
             self.__stripe.setPixelColor(i + self.__color_toggle, color)
+        return True
+
+    def __alert(self):
+        """
+        Alert animation by blinking red.
+        :return: True if the pixels have to be updated, else False.
+        """
+        if self.__color_toggle != 0:
+            return False
+
+        current_color = self.__stripe.getPixelColor(self.__pixel_iteration)
+        color = COLOR_RED if current_color is COLOR_BLACK else COLOR_BLACK
+
+        for i in range(0, self.__stripe.numPixels()):
+            self.__stripe.setPixelColor(i, color)
         return True
 
     def __increment_animation_iteration(self):
