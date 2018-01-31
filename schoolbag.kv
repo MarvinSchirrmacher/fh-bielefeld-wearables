@@ -19,7 +19,7 @@
     do_default_tab: False
     tab_pos: 'right_top'
     tab_height: pt(40)
-    tab_width: self.height / 3
+    tab_width: self.height / 2
 
 <Button>:
     background_color: 0.282, 0.702, 0.627, 1
@@ -97,13 +97,13 @@
                 height: self.parent.height * 0.85
                 adapter: root.content_management.content_to_remove_adapter
 
-    TabbedPanelItem:
-        text: 'Trimmen'
-
-        BoxLayout:
-            Label:
-                text: 'Trimmmodus ist aktiv.\n Achte beim Trimmen auf die LEDs der Schultergurte.'
-                halign: 'center'
+#    TabbedPanelItem:
+#        text: 'Trimmen'
+#
+#        BoxLayout:
+#            Label:
+#                text: 'Trimmmodus ist aktiv.\n Achte beim Trimmen auf die LEDs der Schultergurte.'
+#                halign: 'center'
 
     TabbedPanelItem:
         text: 'Meta'
