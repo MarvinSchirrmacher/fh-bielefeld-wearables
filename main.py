@@ -5,6 +5,7 @@ from content_management import ContentManagement
 from led_stripe_controller import LedStripeController
 from settings import Settings
 from weight_measurement import WeightMeasurement
+from manual_control import  ManualControl
 
 
 class Management(TabbedPanel):
@@ -14,7 +15,13 @@ class Management(TabbedPanel):
     settings = Settings()
     content_management = ContentManagement(settings)
     led_stripe_controller = LedStripeController(settings)
-    weight_measurement = WeightMeasurement()
+    weight_measurement = WeightMeasurement(
+        settings,
+        led_stripe_controller.on_schoolbag_put_on,
+        led_stripe_controller.on_schoolbag_put_down)
+    manual_control = ManualControl(
+        led_stripe_controller.on_toggle_lighting_state,
+        led_stripe_controller.on_set_next_animation)
 
     def __init__(self):
         super().__init__()

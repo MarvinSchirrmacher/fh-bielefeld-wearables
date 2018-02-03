@@ -1,41 +1,23 @@
 {
     "gender": "female",
-    "birthday": "21. Apr 2010",
-    "height": 132,
-    "weight": 30,
-    "lightingMode": "off",
+    "birthday": "5. Sep 2010",
+    "height": "120",
+    "weight": "30",
+    "lightingMode": "automatic",
     "animationType": "cycle",
     "tags": {
         "9c-b8-31-3b-2e": {
-            "materialName": "Keksdose",
-            "imgName": "duck",
+            "materialName": "Chinesischbuch",
+            "imgName": "panda",
             "monday": "1",
             "tuesday": "0",
             "wednesday": "1",
             "thursday": "0",
             "friday": "1"
         },
-        "d0-d6-77-7a-0b": {
-            "materialName": "Brotdose",
-            "imgName": "bat",
-            "monday": "1",
-            "tuesday": "1",
-            "wednesday": "1",
-            "thursday": "1",
-            "friday": "1"
-        },
-        "80-34-7b-7a-b5": {
-            "materialName": "Deutschheft",
-            "imgName": "dinosaur",
-            "monday": "1",
-            "tuesday": "1",
-            "wednesday": "0",
-            "thursday": "1",
-            "friday": "0"
-        },
         "10-35-82-7a-dd": {
             "materialName": "Mathebuch",
-            "imgName": "fox",
+            "imgName": "dog",
             "monday": "1",
             "tuesday": "0",
             "wednesday": "1",
@@ -43,30 +25,43 @@
             "friday": "1"
         },
         "e0-40-80-7a-5a": {
-            "materialName": "Cheese Burger",
-            "imgName": "dolphin",
+            "materialName": "Deutschbuch",
+            "imgName": "lion",
+            "monday": "1",
+            "tuesday": "1",
+            "wednesday": "1",
+            "thursday": "1",
+            "friday": "1"
+        },
+        "c0-2a-78-7a-e8": {
+            "materialName": "Englischheft",
+            "imgName": "frog",
             "monday": "0",
-            "tuesday": "0",
-            "wednesday": "0",
+            "tuesday": "1",
+            "wednesday": "1",
             "thursday": "0",
             "friday": "0"
         },
-        "c0-2a-78-7a-e8": {
-            "materialName": "Joint",
-            "imgName": "coala",
-            "monday": "0",
-            "tuesday": "0",
+        "80-34-7b-7a-b5": {
+            "materialName": "Geschichtenheft ",
+            "imgName": "cat",
+            "monday": "1",
+            "tuesday": "1",
             "wednesday": "0",
-            "thursday": "0",
+            "thursday": "1",
+            "friday": "0"
+        },
+        "d0-d6-77-7a-0b": {
+            "materialName": "Brotdose",
+            "imgName": "butterfly",
+            "monday": "0",
+            "tuesday": "1",
+            "wednesday": "1",
+            "thursday": "1",
             "friday": "0"
         }
     },
     "currentContent": [
-        "d0-d6-77-7a-0b",
-        "80-34-7b-7a-b5",
-        "e0-40-80-7a-5a",
-        "10-35-82-7a-dd",
-        "c0-2a-78-7a-e8",
-        "9c-b8-31-3b-2e"
+        "80-34-7b-7a-b5"
     ]
 }

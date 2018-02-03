@@ -7,6 +7,7 @@ from kivy.uix.image import Image
 from kivy.uix.listview import CompositeListItem, ListItemLabel
 from kivy.uix.selectableview import SelectableView
 
+from service.informer import Informer
 from tag_registration import TagRegistration
 
 
@@ -39,7 +40,10 @@ class ContentManagement(EventDispatcher):
         """
         super().__init__(*args, **kwargs)
         self.__settings = settings
-        self.__settings.bind(current_content=self.update_content_lists)
+        self.__settings.bind(
+            current_content=self.update_content_lists,
+            tags=self.update_content_lists)
+        self.__updated_content = False
         self.target_content = self.__determine_today_s_target_content()
 
         self.__tag_registration = TagRegistration(
@@ -62,7 +66,6 @@ class ContentManagement(EventDispatcher):
         """
         now = datetime.datetime.now()
         self.current_day = self.WEEKDAY[now.weekday()]
-        print('[ContentManagement] Today is %s' % now.strftime('%c'))
 
         return [
             tag for tag in self.__settings.tags
@@ -77,6 +80,10 @@ class ContentManagement(EventDispatcher):
         :return:
         """
         if tag not in self.__settings.tags:
+            Informer.show_popup(
+                'Tasche packen',
+                'Neues Schumaterial erkannt.\n'
+                'Bitte zuerst in der App registrieren. :)')
             self.__settings.register_new_tag(tag)
 
         if tag in self.__settings.current_content:
@@ -85,6 +92,13 @@ class ContentManagement(EventDispatcher):
             self.__settings.current_content.append(tag)
 
         self.__settings.save()
+
+        if self.content_to_insert or self.content_to_remove:
+            return
+
+        Informer.show_popup(
+            'Tasche packen',
+            'Die Tasche ist richtig gepackt, es kann losgehen. :)')
 
     def __initialize_content_adapter(self):
         """
@@ -100,6 +114,11 @@ class ContentManagement(EventDispatcher):
             ]
         }
 
+        self.current_content_adapter = ListAdapter(
+            data=self.__settings.current_content,
+            args_converter=self.__data_converter,
+            cls=CompositeListItem)
+
         self.content_to_insert_adapter = ListAdapter(
             data=self.content_to_insert,
             args_converter=self.__data_converter,
@@ -112,23 +131,31 @@ class ContentManagement(EventDispatcher):
 
         self.update_content_lists(self.__settings, self.__settings.current_content)
 
-    def update_content_lists(self, instance, current_content):
+    def update_content_lists(self, instance, value):
         """
         Compares the target content list with the current content list to fill
         the insert and the remove content list.
-        :param instance: The
-        :param current_content:
+        :param instance: The calling settings.
+        :param value: Updated setting property.
         :return:
         """
         assert(instance == self.__settings)
 
+        self.target_content = self.__determine_today_s_target_content()
+        self.__settings.current_content = set(self.__settings.current_content)\
+            .intersection(self.__settings.tags.keys())
+
+        self.__update_tag_list_adapter(
+            self.current_content_adapter,
+            self.__settings.current_content)
+
         self.content_to_insert = set(self.target_content)\
-            .difference(current_content)
+            .difference(self.__settings.current_content)
         self.__update_tag_list_adapter(
             self.content_to_insert_adapter,
             self.content_to_insert)
 
-        self.content_to_remove = set(current_content)\
+        self.content_to_remove = set(self.__settings.current_content)\
             .difference(self.target_content)
         self.__update_tag_list_adapter(
             self.content_to_remove_adapter,
@@ -140,7 +167,7 @@ class ContentManagement(EventDispatcher):
                 'image': 'icons/default_image.png',
                 'name': 'Unbekanntes Material'
             }
-            if tag not in tags else
+            if tag not in self.__settings.tags else
             {
                 'image': 'icons/%s.png' % self.__settings.tags[tag]['imgName'],
                 'name': self.__settings.tags[tag]['materialName']
