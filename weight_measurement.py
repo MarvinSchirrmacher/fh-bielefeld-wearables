@@ -2,7 +2,12 @@ from threading import Event, Thread
 
 import time
 
-from UUGear import *
+import sys
+
+if sys.platform.startswith('linux'):
+    from UUGear import *
+else:
+    from mock.uugear_mock import *
 
 ARDUINO_ID = 'UUGear-Arduino-4713-9982'
 
@@ -39,7 +44,7 @@ class WeightMeasurement:
             return
 
         self.__arduino.detach()
-        self.__arduino.stopDeamon()
+        self.__arduino.stopDaemon()
 
     def __measure(self):
         self.__measure_sensor_values()

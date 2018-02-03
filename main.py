@@ -43,7 +43,6 @@ class SchoolBagApp(App):
         return self.__management
 
     def on_stop(self):
-        print('[SchoolBagApp] on_stop')
         self.__management.__del__()
 
 

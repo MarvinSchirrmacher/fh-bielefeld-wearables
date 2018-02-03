@@ -88,8 +88,8 @@ class Settings(EventDispatcher):
                 self.weight = settings['weight']
                 self.lighting_mode = settings['lightingMode']
                 self.animation_type = settings['animationType']
-                self.tags = settings['tags']
                 self.current_content = settings['currentContent']
+                self.tags = settings['tags']
 
             except JSONDecodeError as e:
                 print('[Settings] Could not read the settings file "%s". %s'

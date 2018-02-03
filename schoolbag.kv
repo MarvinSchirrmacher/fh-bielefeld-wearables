@@ -33,8 +33,9 @@
     size_hint_y: None
     height: pt(60)
 
-<ListItemImage>:
-    size_hint_x: None
+<Image>:
+    size_hint: None, None
+    height: pt(60)
     width: pt(60)
     canvas:
         Color:
@@ -44,6 +45,16 @@
             size: self.height, self.height
             pos: self.x, self.y
 
+<ListItemLabel>:
+    shorten: True
+    shorten_from: 'right'
+    text_size: (self.width, self.height / 2)
+
+<Popup>:
+    title_color: .1, .1, .1, 1
+    title_size: sp(30)
+    seperator_color: 0.282, 0.702, 0.627, 1
+
 <Management>:
     TabbedPanelItem:
         text: 'Packen'
@@ -51,43 +62,32 @@
         GridLayout:
             cols: 3
 
-            Label:
-                color: 1, 1, 1, 1
-                canvas.before:
-                    Color:
-                        rgb: 0.282, 0.702, 0.627
-                    Rectangle:
-                        pos: self.pos
-                        size: self.size
-                size_hint_y: None
-                height: self.parent.height * 0.15
-                text: 'Aktuell'
-            Label:
-                color: 1, 1, 1, 1
-                canvas.before:
-                    Color:
-                        rgb: 0.282, 0.702, 0.627
-                    Rectangle:
-                        pos: self.pos
-                        size: self.size
-                size_hint_y: None
-                height: self.parent.height * 0.15
-                text: 'Einpacken'
-            Label:
-                color: 1, 1, 1, 1
-                canvas.before:
-                    Color:
-                        rgb: 0.282, 0.702, 0.627
-                    Rectangle:
-                        pos: self.pos
-                        size: self.size
-                size_hint_y: None
-                height: self.parent.height * 0.15
-                text: 'Auspacken'
+            Image:
+                size_hint: None, None
+                height: pt(60)
+                width: pt(60)
+                source: 'icons/schoolbag.png'
+            Image:
+                size_hint: None, None
+                height: pt(60)
+                width: pt(60)
+                source: 'icons/download.png'
+            Image:
+                size_hint: None, None
+                height: pt(60)
+                width: pt(60)
+                source: 'icons/upload.png'
+
             ListView:
                 size_hint_y: None
                 height: self.parent.height * 0.85
                 adapter: root.content_management.current_content_adapter
+                canvas.before:
+                    Color:
+                        rgba: 1, 0, 0, .1
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
             ListView:
                 size_hint_y: None
                 height: self.parent.height * 0.85
@@ -97,23 +97,11 @@
                 height: self.parent.height * 0.85
                 adapter: root.content_management.content_to_remove_adapter
 
-#    TabbedPanelItem:
-#        text: 'Trimmen'
-#
-#        BoxLayout:
-#            Label:
-#                text: 'Trimmmodus ist aktiv.\n Achte beim Trimmen auf die LEDs der Schultergurte.'
-#                halign: 'center'
-
     TabbedPanelItem:
-        text: 'Meta'
+        text: 'Einstellungen'
 
         BoxLayout:
             orientation: 'vertical'
-
-            Button:
-                text: 'Close'
-                on_press: app.stop()
 
             BoxLayout:
                 orientation: 'horizontal'
@@ -162,3 +150,12 @@
                     text: 'Animationstyp'
                 Label:
                     text: root.settings.animation_type
+
+            BoxLayout:
+                orientation: 'horizontal'
+
+                Button:
+                    text: 'App beenden'
+                    on_press: app.stop()
+                Label:
+                    text: ''

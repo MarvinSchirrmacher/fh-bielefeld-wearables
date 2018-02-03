@@ -1,8 +1,14 @@
 from threading import Event, Thread
-import RPi.GPIO as GPIO
 import time
 
-CONTROL_PIN = 37;
+import sys
+
+if sys.platform.startswith('linux'):
+    import RPi.GPIO as GPIO
+else:
+    from mock.rpi_mock import GPIO
+
+CONTROL_PIN = 37
 BUTTON_PRESSED = 0
 BUTTON_LONG_PRESSED = 6
 
@@ -68,5 +74,5 @@ class ManualControl:
         if not self.__manual_control_thread.is_alive:
             return
 
-        self.__manual_control_thread_method.set()
+        self.__stop_manual_control_thread.set()
         self.__manual_control_thread.join()
